@@ -20,6 +20,7 @@ function createGameState() {
         players: [{}, {}],
         tunnel: {},
         obstacle: {},
+        turn: {},
       
         gridsize: GRID_SIZE
       }
@@ -87,14 +88,14 @@ function randomPos(state) {
     const prisoner = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
-        role: 'prisoner'
+        role: 'prisoner',
     };
     blocks.push([prisoner.x, prisoner.y]);
 
     const warder = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
-        role: 'warder'
+        role: 'warder',
     };
     blocks.push([warder.x, warder.y]);
 
@@ -120,9 +121,11 @@ function randomPos(state) {
     if (randomRole === 0) {
         state.players[0] = prisoner;
         state.players[1] = warder;
+        state.turn = 1;
     } else {
         state.players[0] = warder;
         state.players[1] = prisoner;
+        state.turn = 2;
     }
 }
 
