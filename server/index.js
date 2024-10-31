@@ -77,11 +77,17 @@ io.on('connection', (client) => {
     const turn = state[roomName].turn;
 
     if (move) {
-      if (turn === client.number && validMove(state[roomName], client.number, move)) {
-        player.x += move.x;
-        player.y += move.y;
-        if (turn === 1) state[roomName].turn = 2;
-        else state[roomName].turn = 1;
+      if (turn === client.number) {
+        if (validMove(state[roomName], client.number, move)) {
+          player.x += move.x;
+          player.y += move.y;
+          if (turn === 1) state[roomName].turn = 2;
+          else state[roomName].turn = 1;
+        } else {
+          io.to(client.id).emit('invalidMove');
+        }
+      } else {
+        io.to(client.id).emit('invalidTurn');
       }
     }
   }

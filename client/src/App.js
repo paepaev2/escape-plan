@@ -24,6 +24,8 @@ function App() {
     socket.on('gameCode', handleGameCode);
     socket.on('unknownGame', handleUnknownGame);
     socket.on('tooManyPlayers', handleTooManyPlayers);
+    socket.on('invalidMove', handleInvalidMove);
+    socket.on('invalidTurn', handleInvalidTurn);
 
     return () => {
       socket.off('gameState');
@@ -31,6 +33,8 @@ function App() {
       socket.off('gameCode');
       socket.off('unknownGame');
       socket.off('tooManyPlayers');
+      socket.off('invalidMove');
+      socket.off('invalidTurn');
     };
   }, []); 
 
@@ -105,6 +109,14 @@ function App() {
     alert('This game already has two players.');
     reset();
   };
+
+  const handleInvalidMove = () => {
+    alert('You cannot move to that way !-!');
+  }
+
+  const handleInvalidTurn = () => {
+    alert('It\'s not your turn!, please wait for another player');
+  }
 
   const reset = () => {
     setGameCode('');
