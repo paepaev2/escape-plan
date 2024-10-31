@@ -30,7 +30,7 @@ function App() {
       socket.off('unknownGame');
       socket.off('tooManyPlayers');
     };
-  }, []);
+  });
 
   const createGame = () => {
     socket.emit('newGame');
@@ -65,8 +65,6 @@ function App() {
   };
 
   const handleGameCode = (code) => {
-    console.log('pass here plssssss');
-    console.log('gameCode from socket: ', code);
     setGameCode(code);
     setPlayerNumber(1);
     setIsGameStarted(true);

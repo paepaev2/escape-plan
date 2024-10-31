@@ -36,39 +36,15 @@ io.on('connection', (client) => {
 
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
-
-    client.emit('gameCode', roomName);
     
     console.log(state[roomName]);
-
-    // client.join(roomName, (err) => { // Callback after joining
-    //   if (err) {
-    //     console.error('Error joining room:', err);
-    //     return;
-    //   }
-
-    //   const room = io.sockets.adapter.rooms[roomName];
-    //   console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
-
-    //   client.emit('gameCode', roomName);
-    //   client.emit('init', 1); // Player 1
-    // });
     
     client.join(roomName);
     client.number = 1;
+    client.emit('gameCode', roomName);
+    client.emit('init', 1);
 
-    // Check if the client is already in the room
-    const room = io.sockets.adapter.rooms[roomName];
-    const isAlreadyInRoom = room && room.sockets[client.id];
-
-    if (isAlreadyInRoom) {
-        console.log('player 1 joined');
-    } else {
-      console.log('player 1 where');
-    }
-
-    client.emit('init', 1); // Player 1
-    
+    const room = io.sockets.adapter.rooms.get(roomName);
     console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
   }
 

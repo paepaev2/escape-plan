@@ -96,7 +96,7 @@ function randomPos(state) {
 
     state.obstacle = obstacle;
 
-    const randomRole = Math.floor(Math.random());
+    const randomRole = Math.round(Math.random());
     if (randomRole === 0) {
         state.players[0] = prisoner;
         state.players[1] = warder;
