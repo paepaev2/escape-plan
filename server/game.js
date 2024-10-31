@@ -47,12 +47,13 @@ function gameLoop(state) {
     return false;
 }
 
-function validMove(state, move) {
-    const prisoner = state.prisoner;
+function validMove(state, index, move) {
+    console.log(state);
+    const player = state.players[index - 1];
     const obstacle = state.obstacle;
 
-    let x = prisoner.x;
-    let y = prisoner.y;
+    let x = player.x;
+    let y = player.y;
     x += move.x;
     y += move.y;
 
