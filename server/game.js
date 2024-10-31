@@ -1,16 +1,24 @@
 const { GRID_SIZE } = require('./constant');
 
 module.exports = {
-    createGameState,
+    // createGameState,
+    initGame,
     gameLoop,
     validMove,
     randomPos,
     getUpdatedPos,
 }
 
+function initGame() {
+    const state = createGameState();
+    randomPos(state);
+    return state;
+}
+
 function createGameState() {
     return {
-        prisoner: {},
+        players: [{}, {}],
+        // tunnel: {},
         obstacle: {},
       
         gridsize: GRID_SIZE
@@ -20,17 +28,21 @@ function createGameState() {
 function gameLoop(state) {
     if (!state) return;
 
-    // const prisoner = state.prisoner;
+    let prisoner;
+    let warder;
 
-    // if (prisoner.x < 0 || prisoner.x > GRID_SIZE-1 || prisoner.y < 0 || prisoner.y > GRID_SIZE-1) {
-    //     console.log('OUT!');
-    //     return 2;
-    // }
+    if (state.players[0].role === prisoner) {
+        prisoner = state.players[0];
+        warder = state.players[1];
+    } else {
+        prisoner = state.players[1];
+        warder = state.players[0];
+    }
 
-    // if (state.obstacle.x === prisoner.x && state.obstacle.y === prisoner.y) {
-    //     console.log('BUMP!');
-    //     return 2;
-    // }
+    if (prisoner.x == warder.x && prisoner.y == warder.y) {
+        alert("warder wins");
+        return 2;
+    }
 
     return false;
 }
@@ -58,22 +70,41 @@ function validMove(state, move) {
 }
 
 function randomPos(state) {
-    prisoner = {
+    const prisoner = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
-    }
+        role: 'prisoner'
+    };
 
-    obstacle = {
+    const warder = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
-    }
+        role: 'warder'
+    };
 
-    if (prisoner.x === obstacle.x && prisoner.y === obstacle.y) {
+    const obstacle = {
+        x: Math.floor(Math.random() * GRID_SIZE),
+        y: Math.floor(Math.random() * GRID_SIZE),
+    };
+
+    if ((prisoner.x === obstacle.x && prisoner.y === obstacle.y) || 
+        (prisoner.x === warder.x && prisoner.y === warder.y) ||
+        (warder.x === obstacle.x && warder.y === obstacle.y)
+    ) {
         return randomPos(state);
     }
 
-    state.prisoner = prisoner;
     state.obstacle = obstacle;
+
+    const randomRole = Math.floor(Math.random());
+    if (randomRole === 0) {
+        state.players[0] = prisoner;
+        state.players[1] = warder;
+    } else {
+        state.players[0] = warder;
+        state.players[1] = prisoner;
+    }
+
 }
 
 function getUpdatedPos(keyCode) {
