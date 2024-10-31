@@ -43,8 +43,8 @@ function App() {
     // });
   };
 
-  const joinGame = (code) => {
-    socket.emit('joinGame', code);
+  const joinGame = (roomName) => {
+    socket.emit('joinGame', roomName);
     socket.on('init', (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);

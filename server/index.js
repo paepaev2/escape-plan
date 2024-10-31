@@ -49,7 +49,7 @@ io.on('connection', (client) => {
   }
 
   function handleJoinGame(roomName) {
-    const room = io.sockets.adapter.rooms[roomName];
+    const room = io.sockets.adapter.rooms.get(roomName);
     const numClients = room ? room.size : 0;
 
     console.log(`Trying to join room: ${roomName}, Current clients: ${numClients}`);
