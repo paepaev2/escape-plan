@@ -18,7 +18,7 @@ function initGame() {
 function createGameState() {
     return {
         players: [{}, {}],
-        // tunnel: {},
+        tunnel: {},
         obstacle: {},
       
         gridsize: GRID_SIZE
@@ -31,7 +31,7 @@ function gameLoop(state) {
     let prisoner;
     let warder;
 
-    if (state.players[0].role === prisoner) {
+    if (state.players[0].role === 'prisoner') {
         prisoner = state.players[0];
         warder = state.players[1];
     } else {
@@ -39,9 +39,12 @@ function gameLoop(state) {
         warder = state.players[0];
     }
 
+    if (prisoner.x == state.tunnel.x && prisoner.y == state.tunnel.y) {
+        return 1; //prisoner wins
+    }
+
     if (prisoner.x == warder.x && prisoner.y == warder.y) {
-        alert("warder wins");
-        return 2;
+        return 2; //warder wins
     }
 
     return false;
@@ -50,6 +53,7 @@ function gameLoop(state) {
 function validMove(state, index, move) {
     console.log(state);
     const player = state.players[index - 1];
+    const tunnel = state.tunnel;
     const obstacle = state.obstacle;
 
     let x = player.x;
@@ -67,34 +71,47 @@ function validMove(state, index, move) {
         return false;
     }
 
+    if (player.role === 'warder' && tunnel.x === x && tunnel.y === y) {
+        console.log('WARDER CANNOT WALK THROUGH THE TUNNEL');
+        return false;
+    }
+
     return true;
 }
 
 function randomPos(state) {
+    const blocks = [];
+
     const prisoner = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
         role: 'prisoner'
     };
+    blocks.push([prisoner.x, prisoner.y]);
 
     const warder = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
         role: 'warder'
     };
+    blocks.push([warder.x, warder.y]);
+
+    const tunnel = {
+        x: Math.floor(Math.random() * GRID_SIZE),
+        y: Math.floor(Math.random() * GRID_SIZE),
+    };
+    blocks.push([tunnel.x, tunnel.y]);
 
     const obstacle = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE),
     };
+    blocks.push([obstacle.x, obstacle.y]);
 
-    if ((prisoner.x === obstacle.x && prisoner.y === obstacle.y) || 
-        (prisoner.x === warder.x && prisoner.y === warder.y) ||
-        (warder.x === obstacle.x && warder.y === obstacle.y)
-    ) {
-        return randomPos(state);
-    }
+    const uniquePositions = blocks.length === new Set(blocks.map(JSON.stringify)).size;
+    if (!uniquePositions) return randomPos(state);
 
+    state.tunnel = tunnel;
     state.obstacle = obstacle;
 
     const randomRole = Math.round(Math.random());
@@ -105,7 +122,6 @@ function randomPos(state) {
         state.players[0] = warder;
         state.players[1] = prisoner;
     }
-
 }
 
 function getUpdatedPos(keyCode) {

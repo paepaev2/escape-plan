@@ -5,14 +5,16 @@ import { io } from 'socket.io-client';
 const socket = io('http://localhost:5000');
 
 const BG_COLOUR = '#231f20';
-const PRISONER_COLOUR = '#d96464';
-const WARDER_COLOUR = '#646dd9';
-const OBSTACLE_COLOUR = '#d9cd64';
+const PRISONER_COLOUR = '#d96464'; //red
+const WARDER_COLOUR = '#646dd9'; //blue
+const TUNNEL_COLOUR = '#64d987'; //green
+const OBSTACLE_COLOUR = '#d9cd64'; //yellow
 
 function App() {
   const [gameCode, setGameCode] = useState('');
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [playerNumber, setPlayerNumber] = useState(null);
+  const [playerRole, setPlayerRole] = useState(null);
   const [gameState, setGameState] = useState(null);
   const canvasRef = useRef(null);
 
@@ -30,17 +32,22 @@ function App() {
       socket.off('unknownGame');
       socket.off('tooManyPlayers');
     };
-  });
+  }, []); 
+
+  useEffect(() => {
+    if (gameState && playerNumber !== null) {
+      const role = gameState.players[playerNumber - 1]?.role;
+      setPlayerRole(role);
+    }
+  }, [gameState, playerNumber]); // Run when gameState or playerNumber changes
 
   const createGame = () => {
     socket.emit('newGame');
-    // socket.on('gameCode', (code) => {
-    //   console.log('pass here plssssss');
-    //   console.log('gameCode from socket: ', code);
-    //   setGameCode(code);
-    //   setPlayerNumber(1);
-    //   setIsGameStarted(true);
-    // });
+    socket.on('gameCode', (code) => {
+      setGameCode(code);
+      setPlayerNumber(1);
+      setIsGameStarted(true);
+      });
   };
 
   const joinGame = (roomName) => {
@@ -55,12 +62,12 @@ function App() {
   };
 
   const handleGameState = (state) => {
-    setGameState(JSON.parse(state));
+    setGameState(state);
   };
 
   const handleGameOver = (data) => {
-    const { winner } = JSON.parse(data);
-    alert(`Game Over! Player ${winner} wins!`);
+    const { winner } = data;
+    alert(`Game Over! Player ${winner}, ${playerRole} wins!`);
     setIsGameStarted(false);
   };
 
@@ -111,6 +118,9 @@ function App() {
       ctx.fillRect(player.x * size, player.y * size, size, size);
     });
 
+    ctx.fillStyle = TUNNEL_COLOUR;
+    ctx.fillRect(state.tunnel.x * size, state.tunnel.y * size, size, size);
+
     ctx.fillStyle = OBSTACLE_COLOUR;
     ctx.fillRect(state.obstacle.x * size, state.obstacle.y * size, size, size);
   };
@@ -140,7 +150,7 @@ function App() {
       ) : (
         <div className="text-center">
           <h1>Your game code is: {gameCode}</h1>
-          <h2>You are Player {playerNumber}</h2>
+          <h2>You are Player {playerNumber}, {playerRole}</h2>
           <canvas
             ref={canvasRef}
             onKeyDown={handleKeyPress}

@@ -42,6 +42,7 @@ io.on('connection', (client) => {
     client.join(roomName);
     client.number = 1;
     client.emit('gameCode', roomName);
+    client.emit('gameState', state[roomName]);
     client.emit('init', 1);
 
     const room = io.sockets.adapter.rooms.get(roomName);
@@ -71,12 +72,8 @@ io.on('connection', (client) => {
     const roomName = clientRooms[client.id];
     if (!roomName) return;
 
-    console.log(keyCode);
-
     const player = state[roomName].players[client.number - 1];
-    // console.log(player);
     const move = getUpdatedPos(parseInt(keyCode));
-    console.log(move);
 
     if (move && validMove(state[roomName], client.number, move)) {
       player.x += move.x;
@@ -90,11 +87,11 @@ function startGameInterval(roomName) {
     const winner = gameLoop(state[roomName]);
 
     if (winner) {
-      io.sockets.in(roomName).emit('gameOver', JSON.stringify({ winner }));
+      io.sockets.in(roomName).emit('gameOver', { winner });
       clearInterval(intervalId);
       delete state[roomName];
     } else {
-      io.sockets.in(roomName).emit('gameState', JSON.stringify(state[roomName]));
+      io.sockets.in(roomName).emit('gameState', state[roomName]);
     }
   }, 1000 / 60);
 }
