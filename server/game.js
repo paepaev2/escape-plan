@@ -40,11 +40,13 @@ function gameLoop(state) {
     }
 
     if (prisoner.x == state.tunnel.x && prisoner.y == state.tunnel.y) {
-        return 1; //prisoner wins
+        if (state.players[0].role === 'prisoner') return 1.1 //player1, prisoner wins
+        else return 1.2; //player2, prisoner wins
     }
 
     if (prisoner.x == warder.x && prisoner.y == warder.y) {
-        return 2; //warder wins
+        if (state.players[0].role === 'warder') return 2.1 //player1, warder wins
+        else return 2.2; //player2, warder wins
     }
 
     return false;

@@ -67,7 +67,26 @@ function App() {
 
   const handleGameOver = (data) => {
     const { winner } = data;
-    alert(`Game Over! Player ${winner}, ${playerRole} wins!`);
+
+    let number;
+    let role;
+    if (winner === 1.1) {
+      number = 1;
+      role = 'prisoner';
+    } else if (winner === 1.2) {
+      number = 2;
+      role = 'prisoner';
+    } else if (winner === 2.1) {
+      number = 1;
+      role = 'warder';
+    } else if (winner === 2.2) {
+      number = 2;
+      role = 'warder';
+    } else {
+      role = 'error';
+    }
+
+    alert(`Game Over! Player ${number}, ${role} wins!`);
     setIsGameStarted(false);
   };
 
