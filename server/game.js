@@ -54,7 +54,7 @@ function gameLoop(state) {
 }
 
 function validMove(state, index, move) {
-    console.log(state);
+    // console.log(state);
     const player = state.players[index - 1];
     const tunnel = state.tunnel;
     const obstacle = state.obstacle;
@@ -65,17 +65,17 @@ function validMove(state, index, move) {
     y += move.y;
 
     if (x < 0 || x > GRID_SIZE-1 || y < 0 || y > GRID_SIZE-1) {
-        console.log('OUT!');
+        // console.log('OUT!');
         return false;
     }
 
     if (obstacle.x === x && obstacle.y === y) {
-        console.log('BUMP!');
+        // console.log('BUMP!');
         return false;
     }
 
     if (player.role === 'warder' && tunnel.x === x && tunnel.y === y) {
-        console.log('WARDER CANNOT WALK THROUGH THE TUNNEL');
+        // console.log('WARDER CANNOT WALK THROUGH THE TUNNEL');
         return false;
     }
 
@@ -121,11 +121,11 @@ function randomPos(state) {
     if (randomRole === 0) {
         state.players[0] = prisoner;
         state.players[1] = warder;
-        state.turn = 1;
+        state.turn = 2;
     } else {
         state.players[0] = warder;
         state.players[1] = prisoner;
-        state.turn = 2;
+        state.turn = 1;
     }
 }
 
