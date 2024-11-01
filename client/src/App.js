@@ -1,5 +1,6 @@
 // App.js
 import React, { useState, useEffect, useRef } from 'react';
+import Countdown from 'react-countdown';
 import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:5000');
@@ -17,6 +18,9 @@ function App() {
   const [playerRole, setPlayerRole] = useState(null);
   const [gameState, setGameState] = useState(null);
   const canvasRef = useRef(null);
+  const [currentTurn, setCurrentTurn] = useState(null);
+  const [turnTimeOut, setTurnTimeOut] = useState(null);
+  const [keyPressDone, setKeyPressDone] = useState(false);
 
   useEffect(() => {
     socket.on('gameState', handleGameState);
@@ -25,7 +29,7 @@ function App() {
     socket.on('unknownGame', handleUnknownGame);
     socket.on('tooManyPlayers', handleTooManyPlayers);
     socket.on('invalidMove', handleInvalidMove);
-    socket.on('invalidTurn', handleInvalidTurn);
+    // socket.on('invalidTurn', handleInvalidTurn);
 
     return () => {
       socket.off('gameState');
@@ -34,9 +38,17 @@ function App() {
       socket.off('unknownGame');
       socket.off('tooManyPlayers');
       socket.off('invalidMove');
-      socket.off('invalidTurn');
+      // socket.off('invalidTurn');
     };
   }, []); 
+
+  useEffect(() => {
+    if (playerNumber === currentTurn) {
+      setTurnTimeOut(Date.now() + 10000);
+      setKeyPressDone(false);
+    }
+  }, [currentTurn, playerNumber]); // Run when currentTurn or playerNumber changes
+  
 
   useEffect(() => {
     if (gameState && playerNumber !== null) {
@@ -59,6 +71,7 @@ function App() {
     socket.on('init', (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);
+      setKeyPressDone(false);
     });
 
     socket.on('unknownGame', handleUnknownGame);
@@ -67,6 +80,7 @@ function App() {
 
   const handleGameState = (state) => {
     setGameState(state);
+    setCurrentTurn(state.turn);
   };
 
   const handleGameOver = (data) => {
@@ -114,9 +128,9 @@ function App() {
     alert('You cannot move to that way !-!');
   }
 
-  const handleInvalidTurn = () => {
-    alert('It\'s not your turn!, please wait for another player');
-  }
+  // const handleInvalidTurn = () => {
+  //   alert('It\'s not your turn!, please wait for another player');
+  // }
 
   const reset = () => {
     setGameCode('');
@@ -127,7 +141,13 @@ function App() {
 
   const handleKeyPress = (event) => {
     if (isGameStarted) {
-      socket.emit('keydown', event.keyCode);
+      if (playerNumber === currentTurn) {
+        socket.emit('keydown', event.keyCode);
+        setKeyPressDone(true);
+        setTurnTimeOut(null);
+      } else {
+        alert('It\'s not your turn!, please wait for another player');
+      }
     }
   };
 
@@ -155,6 +175,14 @@ function App() {
     ctx.fillStyle = OBSTACLE_COLOUR;
     ctx.fillRect(state.obstacle.x * size, state.obstacle.y * size, size, size);
   };
+
+  const handleCountdownComplete = () => {
+    if (!keyPressDone) alert('TIME OUT!');
+  };
+
+  const renderer = ({ seconds }) => (
+    <span>{seconds}</span>
+  );
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
@@ -190,6 +218,13 @@ function App() {
             height="600"
             style={{ border: '1px solid black' }}
           ></canvas>
+          {playerNumber === currentTurn && turnTimeOut && (
+            <Countdown 
+                date={turnTimeOut}
+                renderer={renderer}
+                onComplete={handleCountdownComplete}
+            />
+          )}
         </div>
       )}
     </div>
