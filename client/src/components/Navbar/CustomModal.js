@@ -12,7 +12,7 @@ function CustomModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleExit = () => {
-    navigate("/"); // Navigate to the home page
+    window.location.reload();
   };
 
   return (

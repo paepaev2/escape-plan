@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
-import Home from "./Home";
 import Game from "./GameLogic";
 
 function App() {
