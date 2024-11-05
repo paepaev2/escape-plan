@@ -1,18 +1,18 @@
 // server.js
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-const { gameLoop, validMove, getUpdatedPos, initGame } = require('./game');
-const { makeid } = require('./utils');
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const cors = require("cors");
+const { gameLoop, validMove, getUpdatedPos, initGame } = require("./game");
+const { makeid } = require("./utils");
 
 // Set up the Express app and server
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:3000', // React frontend
-    methods: ['GET', 'POST'],
+    origin: "http://localhost:3000", // React frontend
+    methods: ["GET", "POST"],
   },
 });
 
@@ -20,14 +20,14 @@ const state = {};
 const clientRooms = {};
 
 // Socket.IO connection handling
-io.on('connection', (client) => {
-  console.log('A user connected:', client.id);
+io.on("connection", (client) => {
+  console.log("A user connected:", client.id);
 
-  client.on('newGame', handleNewGame);
-  client.on('joinGame', handleJoinGame);
-  client.on('keydown', handleKeydown);
-  client.on('disconnect', () => {
-    console.log('Client disconnected:', client.id);
+  client.on("newGame", handleNewGame);
+  client.on("joinGame", handleJoinGame);
+  client.on("keydown", handleKeydown);
+  client.on("disconnect", () => {
+    console.log("Client disconnected:", client.id);
   });
 
   function handleNewGame() {
@@ -36,34 +36,40 @@ io.on('connection', (client) => {
 
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
-    
+
     console.log(state[roomName]);
-    
+
     client.join(roomName);
     client.number = 1;
-    client.emit('gameCode', roomName);
-    client.emit('gameState', state[roomName]);
-    client.emit('init', 1);
+    client.emit("gameCode", roomName);
+    client.emit("gameState", state[roomName]);
+    client.emit("init", 1);
 
     const room = io.sockets.adapter.rooms.get(roomName);
-    console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
+    console.log(
+      `${client.id} joined room: ${roomName}, Current clients: ${
+        room ? room.size : 0
+      }`
+    );
   }
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms.get(roomName);
     const numClients = room ? room.size : 0;
 
-    console.log(`Trying to join room: ${roomName}, Current clients: ${numClients}`);
+    console.log(
+      `Trying to join room: ${roomName}, Current clients: ${numClients}`
+    );
 
     if (numClients === 0) {
-      client.emit('unknownGame');
+      client.emit("unknownGame");
     } else if (numClients > 1) {
-      client.emit('tooManyPlayers');
+      client.emit("tooManyPlayers");
     } else {
       clientRooms[client.id] = roomName;
       client.join(roomName);
       client.number = 2;
-      client.emit('init', 2); // Player 2
+      client.emit("init", 2); // Player 2
       startGameInterval(roomName);
     }
   }
@@ -87,14 +93,16 @@ function startGameInterval(roomName) {
     const winner = gameLoop(state[roomName]);
 
     if (winner) {
-      io.sockets.in(roomName).emit('gameOver', { winner });
+      io.sockets.in(roomName).emit("gameOver", { winner });
       clearInterval(intervalId);
       delete state[roomName];
     } else {
-      io.sockets.in(roomName).emit('gameState', state[roomName]);
+      io.sockets.in(roomName).emit("gameState", state[roomName]);
     }
   }, 1000 / 60);
 }
 
-const PORT = 5000;
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const PORT = 8000;
+server.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
