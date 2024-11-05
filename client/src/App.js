@@ -1,19 +1,22 @@
 // App.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import Countdown from 'react-countdown';
 import { io } from 'socket.io-client';
 
+const socket = io('http://localhost:5000');
 
-const socket = io("http://localhost:8000");
+const BG_COLOUR = '#231f20';
+const PRISONER_COLOUR = '#d96464'; //red
+const WARDER_COLOUR = '#646dd9'; //blue
+const TUNNEL_COLOUR = '#64d987'; //green
+const OBSTACLE_COLOUR = '#d9cd64'; //yellow
 
 function App() {
-  const [gameCode, setGameCode] = useState("");
+  const [gameCode, setGameCode] = useState('');
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [playerNumber, setPlayerNumber] = useState(null);
   const [playerRole, setPlayerRole] = useState(null);
   const [gameState, setGameState] = useState(null);
-
   const canvasRef = useRef(null);
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
@@ -36,9 +39,8 @@ function App() {
       socket.off('tooManyPlayers');
       socket.off('invalidMove');
       // socket.off('invalidTurn');
-
     };
-  }, []);
+  }, []); 
 
   useEffect(() => {
     if (playerNumber === currentTurn) {
@@ -53,67 +55,32 @@ function App() {
       const role = gameState.players[playerNumber - 1]?.role;
       setPlayerRole(role);
     }
-  }, [gameState, playerNumber]);
+  }, [gameState, playerNumber]); // Run when gameState or playerNumber changes
 
   const createGame = () => {
-    socket.emit("newGame");
-    socket.on("gameCode", (code) => {
+    socket.emit('newGame');
+    socket.on('gameCode', (code) => {
       setGameCode(code);
       setPlayerNumber(1);
       setIsGameStarted(true);
-    });
+      });
   };
 
   const joinGame = (roomName) => {
-    socket.emit("joinGame", roomName);
-    socket.on("init", (playerNum) => {
+    socket.emit('joinGame', roomName);
+    socket.on('init', (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);
       setKeyPressDone(false);
     });
 
-    socket.on("unknownGame", handleUnknownGame);
-    socket.on("tooManyPlayers", handleTooManyPlayers);
-  };
-
-  const generateMap = (state) => {
-    const size = state.gridsize;
-    const map = Array(size)
-      .fill(null)
-      .map(() => Array(size).fill(0)); // Initialize with 0 (base tile)
-
-    // Place obstacles
-    if (state.obstacles) {
-      state.obstacles.forEach((obstacle) => {
-        map[obstacle.y][obstacle.x] = 1; // 1 represents obstacle tile
-      });
-    } else if (state.obstacle) {
-      // If single obstacle
-      map[state.obstacle.y][state.obstacle.x] = 1;
-    }
-
-    // Place tunnel
-    const tunnel = state.tunnel;
-    if (tunnel) {
-      map[tunnel.y][tunnel.x] = "h"; // 'h' represents the tunnel
-    }
-
-    // Place players
-    state.players.forEach((player) => {
-      const symbol = player.role === "prisoner" ? "p" : "w";
-      map[player.y][player.x] = symbol;
-    });
-
-    return map;
+    socket.on('unknownGame', handleUnknownGame);
+    socket.on('tooManyPlayers', handleTooManyPlayers);
   };
 
   const handleGameState = (state) => {
-
-    const map = generateMap(state);
-    setGameState({ ...state, map });
-//     setGameState(state);
+    setGameState(state);
     setCurrentTurn(state.turn);
-
   };
 
   const handleGameOver = (data) => {
@@ -123,18 +90,18 @@ function App() {
     let role;
     if (winner === 1.1) {
       number = 1;
-      role = "prisoner";
+      role = 'prisoner';
     } else if (winner === 1.2) {
       number = 2;
-      role = "prisoner";
+      role = 'prisoner';
     } else if (winner === 2.1) {
       number = 1;
-      role = "warden";
+      role = 'warder';
     } else if (winner === 2.2) {
       number = 2;
-      role = "warden";
+      role = 'warder';
     } else {
-      role = "error";
+      role = 'error';
     }
 
     alert(`Game Over! Player ${number}, ${role} wins!`);
@@ -148,12 +115,12 @@ function App() {
   };
 
   const handleUnknownGame = () => {
-    alert("Unknown Game Code.");
+    alert('Unknown Game Code.');
     reset();
   };
 
   const handleTooManyPlayers = () => {
-    alert("This game already has two players.");
+    alert('This game already has two players.');
     reset();
   };
 
@@ -166,12 +133,11 @@ function App() {
   // }
 
   const reset = () => {
-    setGameCode("");
+    setGameCode('');
     setPlayerNumber(null);
     setIsGameStarted(false);
     setGameState(null);
   };
-
 
   const handleKeyPress = (event) => {
     if (isGameStarted) {
@@ -185,105 +151,29 @@ function App() {
     }
   };
 
-
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (isGameStarted) {
-        socket.emit("keydown", event.keyCode);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isGameStarted]);
-
-  // Function to get the cell content based on the cell type
-  const getCellContent = (cell) => {
-    const wardenImage = "/images/warden.png";
-    const prisonerImage = "/images/prisoner.png";
-    const baseTileImage = "/images/base-tile.png";
-    const obstacleTileImage = "/images/obstacle-tile.png";
-    const tunnelImage = "/images/tunnel-tile.png"; // Ensure this image exists
-
-    const imageStyle = {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-    };
-
-    const characterStyle = {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      objectFit: "contain",
-    };
-
-    switch (cell) {
-      case 0:
-        return <img src={baseTileImage} alt="base-tile" style={imageStyle} />;
-      case 1:
-        return (
-          <img src={obstacleTileImage} alt="Obstacle" style={imageStyle} />
-        );
-      case "w":
-        return (
-          <>
-            <img src={baseTileImage} alt="base-tile" style={imageStyle} />
-            <img src={wardenImage} alt="Warden" style={characterStyle} />
-          </>
-        );
-      case "p":
-        return (
-          <>
-            <img src={baseTileImage} alt="base-tile" style={imageStyle} />
-            <img src={prisonerImage} alt="Prisoner" style={characterStyle} />
-          </>
-        );
-      case "h":
-        return <img src={tunnelImage} alt="Tunnel" style={imageStyle} />;
-      default:
-        return <img src={baseTileImage} alt="base-tile" style={imageStyle} />;
+    if (gameState && canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      paintGame(ctx, gameState);
     }
-  };
+  }, [gameState]);
 
-  // Grid component to render the game map
-  const Grid = ({ map, getCellContent }) => {
-    return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${map[0].length}, 1fr)`,
-          gap: "1px",
-          width: "500px",
-          height: "500px",
-          margin: "0 auto",
-        }}
-      >
-        {map.map((row, rowIndex) =>
-          row.map((cell, columnIndex) => (
-            <Cell
-              key={`c${columnIndex}${rowIndex}`}
-              cell={cell}
-              getCellContent={getCellContent}
-            />
-          ))
-        )}
-      </div>
-    );
-  };
+  const paintGame = (ctx, state) => {
+    ctx.fillStyle = BG_COLOUR;
+    ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    
+    const size = canvasRef.current.width / state.gridsize;
 
-  // Cell component for each grid cell
-  const Cell = ({ cell, getCellContent }) => {
-    return (
-      <div style={{ position: "relative", width: "100%", height: "100%" }}>
-        {getCellContent(cell)}
-      </div>
-    );
+    state.players.forEach((player) => {
+      ctx.fillStyle = player.role === 'prisoner' ? PRISONER_COLOUR : WARDER_COLOUR;
+      ctx.fillRect(player.x * size, player.y * size, size, size);
+    });
+
+    ctx.fillStyle = TUNNEL_COLOUR;
+    ctx.fillRect(state.tunnel.x * size, state.tunnel.y * size, size, size);
+
+    ctx.fillStyle = OBSTACLE_COLOUR;
+    ctx.fillRect(state.obstacle.x * size, state.obstacle.y * size, size, size);
   };
 
   const handleCountdownComplete = () => {
@@ -319,13 +209,15 @@ function App() {
       ) : (
         <div className="text-center">
           <h1>Your game code is: {gameCode}</h1>
-
-          <h2>
-            You are Player {playerNumber}, {playerRole}
-          </h2>
-          {gameState && gameState.map && (
-            <Grid map={gameState.map} getCellContent={getCellContent} />
-          
+          <h2>You are Player {playerNumber}, {playerRole}</h2>
+          <canvas
+            ref={canvasRef}
+            onKeyDown={handleKeyPress}
+            tabIndex="0"
+            width="600"
+            height="600"
+            style={{ border: '1px solid black' }}
+          ></canvas>
           {playerNumber === currentTurn && turnTimeOut && (
             <Countdown 
                 date={turnTimeOut}
