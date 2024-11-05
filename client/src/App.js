@@ -22,7 +22,6 @@ function App() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
-  // const [startTime, setStartTime] = useState(false);
 
   useEffect(() => {
     socket.on('gameState', handleGameState);
@@ -31,7 +30,6 @@ function App() {
     socket.on('unknownGame', handleUnknownGame);
     socket.on('tooManyPlayers', handleTooManyPlayers);
     socket.on('invalidMove', handleInvalidMove);
-    // socket.on('invalidTurn', handleInvalidTurn);
     socket.on('turnCompleted', handleTurnCompleted);
 
     return () => {
@@ -150,10 +148,6 @@ function App() {
     alert('You cannot move to that way !-!');
   }
 
-  // const handleInvalidTurn = () => {
-  //   alert('It\'s not your turn!, please wait for another player');
-  // }
-
   const reset = () => {
     setGameCode('');
     setPlayerNumber(null);
@@ -171,7 +165,6 @@ function App() {
         socket.emit('keydown', event.keyCode);
         setKeyPressDone(true);
         setTurnTimeOut(null);
-        // socket.emit('turnComplete', playerNumber);
       } else {
         alert('It\'s not your turn!, please wait for another player');
       }
@@ -213,6 +206,7 @@ function App() {
   const handleCountdownComplete = () => {
     if (!keyPressDone && playerNumber === currentTurn) {
       alert('TIME OUT!');
+      socket.emit('timeout', playerNumber);
     }
   };
 

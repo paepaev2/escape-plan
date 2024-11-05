@@ -29,11 +29,26 @@ io.on('connection', (client) => {
   client.on('newGame', handleNewGame);
   client.on('joinGame', handleJoinGame);
   client.on('keydown', handleKeydown);
+  client.on('timeout' , handleTimeout);
   client.on('disconnect', () => {
     console.log('Client disconnected:', client.id);
     connectedClients--;
     console.log('Connected clients:', connectedClients);
   });
+
+  function handleTimeout(lostNum) {
+    let winner;
+    const roomName = clientRooms[client.id];
+    if (state[roomName].players[lostNum-1].role === 'prisoner') {
+      winner = lostNum === 1 ? 2.2 : 2.1;
+    } else {
+      winner = lostNum === 1 ? 1.2 : 1.1;
+    }
+    
+    console.log('Winner:', winner);
+    io.sockets.in(roomName).emit('gameOver', { winner });
+    // io.to(roomName).emit('gameOver', { winner });
+  }
 
   function handleNewGame() {
     const roomName = makeid(5);
