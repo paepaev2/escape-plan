@@ -18,6 +18,7 @@ const io = socketIo(server, {
 
 const state = {};
 const clientRooms = {};
+let scoreUpdated = false;
 let connectedClients = 0;
 
 // Socket.IO connection handling
@@ -30,6 +31,7 @@ io.on('connection', (client) => {
   client.on('joinGame', handleJoinGame);
   client.on('keydown', handleKeydown);
   client.on('timeout' , handleTimeout);
+  client.on('setScore', handleSetScore);
   client.on('disconnect', () => {
     console.log('Client disconnected:', client.id);
     connectedClients--;
@@ -45,9 +47,18 @@ io.on('connection', (client) => {
       winner = lostNum === 1 ? 1.2 : 1.1;
     }
     
-    console.log('Winner:', winner);
     io.sockets.in(roomName).emit('gameOver', { winner });
-    // io.to(roomName).emit('gameOver', { winner });
+  }
+
+  function handleSetScore(lostNum) {
+    if (!scoreUpdated) {
+      const roomName = clientRooms[client.id];
+      console.log(state[roomName]);
+      state[roomName].scores[lostNum-1] += 1;
+      console.log(state[roomName]); 
+    }
+
+    scoreUpdated = true;
   }
 
   function handleNewGame() {
@@ -57,7 +68,7 @@ io.on('connection', (client) => {
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
     
-    // console.log(state[roomName]);
+    console.log(state[roomName]);
     
     client.join(roomName);
     client.number = 1;
@@ -117,6 +128,7 @@ io.on('connection', (client) => {
 });
 
 function startGameInterval(roomName) {
+  scoreUpdated = false;
   const intervalId = setInterval(() => {
     const winner = gameLoop(state[roomName]);
 

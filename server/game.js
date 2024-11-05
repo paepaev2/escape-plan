@@ -21,6 +21,7 @@ function createGameState() {
         tunnel: {},
         obstacle: {},
         turn: {},
+        scores: [0, 0],
       
         gridsize: GRID_SIZE
       }

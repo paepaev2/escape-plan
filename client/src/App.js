@@ -39,7 +39,6 @@ function App() {
       socket.off('unknownGame');
       socket.off('tooManyPlayers');
       socket.off('invalidMove');
-      // socket.off('invalidTurn');
       socket.off('turnComplete');
     };
   }, []); 
@@ -92,9 +91,9 @@ function App() {
   };
 
   //log
-  useEffect(() => {
-    console.log(isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn);
-  }, [isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn]);
+  // useEffect(() => {
+  //   console.log(isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn);
+  // }, [isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn]);
   
 
   const handleGameState = (state) => {
@@ -123,6 +122,7 @@ function App() {
       role = 'error';
     }
 
+    socket.emit('setScore', number);
     alert(`Game Over! Player ${number}, ${role} wins!`);
     setIsGameStarted(false);
     setBothPlayersJoined(false); 
