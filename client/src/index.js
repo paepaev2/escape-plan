@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css'; // If you're using Bootstrap for styling
+import './App.css'; // Ensure global CSS is imported
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

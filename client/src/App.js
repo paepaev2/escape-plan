@@ -5,6 +5,7 @@ import Countdown from "react-countdown";
 import { copyToClipboard } from "./components/Clipboard";
 import { io } from "socket.io-client";
 import { Button } from 'react-bootstrap';
+import GameNavbar from "./components/GameNavbar";
 
 const socket = io("http://localhost:8000");
 
@@ -376,8 +377,7 @@ function App() {
         </div>
       ) : (
         <div className="text-center">
-          <h1>Your game code is: {gameCode}</h1>
-          <Button id="copyCode" onClick={() => copyToClipboard(gameCode)}>Copy Text</Button>
+          <GameNavbar gameCode={gameCode} />
           <h2>
             You are Player {playerNumber}, {playerRole}
           </h2>
