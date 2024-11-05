@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Countdown from "react-countdown";
+import { copyToClipboard } from "./components/Clipboard";
 import { io } from "socket.io-client";
+import { Button } from 'react-bootstrap';
 
 const socket = io("http://localhost:8000");
 
@@ -375,6 +377,7 @@ function App() {
       ) : (
         <div className="text-center">
           <h1>Your game code is: {gameCode}</h1>
+          <Button id="copyCode" onClick={() => copyToClipboard(gameCode)}>Copy Text</Button>
           <h2>
             You are Player {playerNumber}, {playerRole}
           </h2>
