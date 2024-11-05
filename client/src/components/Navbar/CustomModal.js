@@ -2,26 +2,32 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import resumeButton from "../../assets/game/buttons/resume.png"; // Replace with your actual paths
 import pauseButton from "../../assets/game/buttons/pause.png";
-import optionsButton from "../../assets/game/buttons/exit.png";
+import exitButton from "../../assets/game/buttons/exit.png";
 import modalBg from "../../assets/modal/modalbg.png";
+import { useNavigate } from "react-router-dom";
 
 function CustomModal({ isOpen, onClose }) {
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
+
+  const handleExit = () => {
+    navigate("/"); // Navigate to the home page
+  };
 
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div style={buttonContainerStyle}>
           <Button onClick={() => onClose()} style={overrideButtonStyle}>
-            <img
-              src={resumeButton}
-              alt="Copy to clipboard"
-              style={buttonStyle}
-            />
+            <img src={resumeButton} alt="Resume" style={buttonStyle} />
           </Button>
 
           <img src={pauseButton} alt="Pause" style={buttonStyle} />
-          <img src={optionsButton} alt="Exit" style={buttonStyle} />
+
+          <Button onClick={() => handleExit()} style={overrideButtonStyle}>
+            <img src={exitButton} alt="Exit" style={buttonStyle} />
+          </Button>
         </div>
       </div>
     </div>
