@@ -1,9 +1,8 @@
 "use client";
 
-import { socket } from "@/socket";
 import React, { useRef, useEffect, useState } from "react";
-import Grid from "./grid";
-import { GameLayoutProps, CellType, Player } from "@/types";
+import { socket } from "./socket";
+import { GameLayoutProps } from "@/types";
 import Image from "next/image";
 
 export default function GameLayout({ roomInfo }: GameLayoutProps) {
