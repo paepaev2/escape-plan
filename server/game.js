@@ -17,7 +17,7 @@ function initGame() {
 
 function createGameState() {
     return {
-        players: [{}, {}],
+        players: [],
         tunnel: {},
         obstacle: {},
         turn: {},

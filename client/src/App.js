@@ -21,6 +21,8 @@ function App() {
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
+  const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
+  // const [startTime, setStartTime] = useState(false);
 
   useEffect(() => {
     socket.on('gameState', handleGameState);
@@ -30,6 +32,7 @@ function App() {
     socket.on('tooManyPlayers', handleTooManyPlayers);
     socket.on('invalidMove', handleInvalidMove);
     // socket.on('invalidTurn', handleInvalidTurn);
+    socket.on('turnCompleted', handleTurnCompleted);
 
     return () => {
       socket.off('gameState');
@@ -39,23 +42,34 @@ function App() {
       socket.off('tooManyPlayers');
       socket.off('invalidMove');
       // socket.off('invalidTurn');
+      socket.off('turnComplete');
     };
   }, []); 
 
   useEffect(() => {
-    if (playerNumber === currentTurn) {
+    if (playerNumber === currentTurn && bothPlayersJoined) {
       setTurnTimeOut(Date.now() + 10000);
       setKeyPressDone(false);
     }
-  }, [currentTurn, playerNumber]); // Run when currentTurn or playerNumber changes
+  }, [currentTurn, playerNumber, bothPlayersJoined]); // Run when currentTurn or playerNumber changes
   
 
   useEffect(() => {
-    if (gameState && playerNumber !== null) {
+    if (gameState && gameState.players.length === 2) {
       const role = gameState.players[playerNumber - 1]?.role;
       setPlayerRole(role);
     }
   }, [gameState, playerNumber]); // Run when gameState or playerNumber changes
+
+  useEffect(() => {
+    socket.on('bothPlayersJoined', () => {
+      setBothPlayersJoined(true);
+    });
+
+    return () => {
+      socket.off('bothPlayersJoined');
+    };
+  }, []);
 
   const createGame = () => {
     socket.emit('newGame');
@@ -71,12 +85,19 @@ function App() {
     socket.on('init', (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);
+      setBothPlayersJoined(true);
       setKeyPressDone(false);
     });
 
     socket.on('unknownGame', handleUnknownGame);
     socket.on('tooManyPlayers', handleTooManyPlayers);
   };
+
+  //log
+  useEffect(() => {
+    console.log(isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn);
+  }, [isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn]);
+  
 
   const handleGameState = (state) => {
     setGameState(state);
@@ -106,12 +127,13 @@ function App() {
 
     alert(`Game Over! Player ${number}, ${role} wins!`);
     setIsGameStarted(false);
+    setBothPlayersJoined(false); 
   };
 
   const handleGameCode = (code) => {
     setGameCode(code);
-    setPlayerNumber(1);
-    setIsGameStarted(true);
+    // setPlayerNumber(1);
+    // setIsGameStarted(true);
   };
 
   const handleUnknownGame = () => {
@@ -136,15 +158,20 @@ function App() {
     setGameCode('');
     setPlayerNumber(null);
     setIsGameStarted(false);
+    setBothPlayersJoined(false);
     setGameState(null);
+    setCurrentTurn(null);
+    setTurnTimeOut(null);
+    setKeyPressDone(false);
   };
 
   const handleKeyPress = (event) => {
-    if (isGameStarted) {
+    if (isGameStarted && bothPlayersJoined) {
       if (playerNumber === currentTurn) {
         socket.emit('keydown', event.keyCode);
         setKeyPressDone(true);
         setTurnTimeOut(null);
+        // socket.emit('turnComplete', playerNumber);
       } else {
         alert('It\'s not your turn!, please wait for another player');
       }
@@ -176,8 +203,17 @@ function App() {
     ctx.fillRect(state.obstacle.x * size, state.obstacle.y * size, size, size);
   };
 
+  const handleTurnCompleted = (playerNumber) => {
+    setKeyPressDone(false);
+    const next = playerNumber === 1 ? 2 : 1;
+    setCurrentTurn((next));
+    setTurnTimeOut(Date.now() + 10000);
+  };
+
   const handleCountdownComplete = () => {
-    if (!keyPressDone) alert('TIME OUT!');
+    if (!keyPressDone && playerNumber === currentTurn) {
+      alert('TIME OUT!');
+    }
   };
 
   const renderer = ({ seconds }) => (
@@ -218,7 +254,7 @@ function App() {
             height="600"
             style={{ border: '1px solid black' }}
           ></canvas>
-          {playerNumber === currentTurn && turnTimeOut && (
+          {isGameStarted && bothPlayersJoined && playerNumber === currentTurn && turnTimeOut && (
             <Countdown 
                 date={turnTimeOut}
                 renderer={renderer}

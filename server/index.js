@@ -69,6 +69,7 @@ io.on('connection', (client) => {
       client.join(roomName);
       client.number = 2;
       client.emit('init', 2); // Player 2
+      client.to(roomName).emit('bothPlayersJoined');
       startGameInterval(roomName);
     }
   }
@@ -88,6 +89,8 @@ io.on('connection', (client) => {
           player.y += move.y;
           if (turn === 1) state[roomName].turn = 2;
           else state[roomName].turn = 1;
+
+          client.to(roomName).emit('turnCompleted');
         } else {
           io.to(client.id).emit('invalidMove');
         }
