@@ -1,9 +1,8 @@
-// App.js
-
 import React, { useState, useEffect, useRef } from "react";
 import Countdown from "react-countdown";
 import { io } from "socket.io-client";
 import GameNavbar from "./components/Navbar/GameNavbar";
+import RandomBackgroundComponent from "./components/GameBackgrounds";
 
 const socket = io("http://localhost:8000");
 
@@ -375,20 +374,24 @@ function GameLogic() {
         </div>
       ) : (
         <div className="text-center">
-          <GameNavbar gameCode={gameCode} />
-          <h2>
-            You are Player {playerNumber}, {playerRole}
-          </h2>
-          {gameState && gameState.map && (
-            <Grid map={gameState.map} getCellContent={getCellContent} />
-          )}
-          {/* {turnTimeOut && (
+        {/* <RandomBackgroundComponent> */}
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <GameNavbar gameCode={gameCode} />
+              <h2>
+                You are Player {playerNumber}, {playerRole}
+              </h2>
+              {gameState && gameState.map && (
+                <Grid map={gameState.map} getCellContent={getCellContent} />
+              )}
+              {/* {turnTimeOut && (
             <Countdown
               date={turnTimeOut}
               renderer={renderer}
               onComplete={handleCountdownComplete}
             />
           )} */}
+            </div>
+          {/* </RandomBackgroundComponent> */}
         </div>
       )}
     </div>
