@@ -1,6 +1,9 @@
 // App.js
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import Countdown from 'react-countdown';
+import { io } from 'socket.io-client';
+
 
 const socket = io("http://localhost:8000");
 
@@ -11,21 +14,39 @@ function App() {
   const [playerRole, setPlayerRole] = useState(null);
   const [gameState, setGameState] = useState(null);
 
+  const canvasRef = useRef(null);
+  const [currentTurn, setCurrentTurn] = useState(null);
+  const [turnTimeOut, setTurnTimeOut] = useState(null);
+  const [keyPressDone, setKeyPressDone] = useState(false);
+
   useEffect(() => {
-    socket.on("gameState", handleGameState);
-    socket.on("gameOver", handleGameOver);
-    socket.on("gameCode", handleGameCode);
-    socket.on("unknownGame", handleUnknownGame);
-    socket.on("tooManyPlayers", handleTooManyPlayers);
+    socket.on('gameState', handleGameState);
+    socket.on('gameOver', handleGameOver);
+    socket.on('gameCode', handleGameCode);
+    socket.on('unknownGame', handleUnknownGame);
+    socket.on('tooManyPlayers', handleTooManyPlayers);
+    socket.on('invalidMove', handleInvalidMove);
+    // socket.on('invalidTurn', handleInvalidTurn);
 
     return () => {
-      socket.off("gameState", handleGameState);
-      socket.off("gameOver", handleGameOver);
-      socket.off("gameCode", handleGameCode);
-      socket.off("unknownGame", handleUnknownGame);
-      socket.off("tooManyPlayers", handleTooManyPlayers);
+      socket.off('gameState');
+      socket.off('gameOver');
+      socket.off('gameCode');
+      socket.off('unknownGame');
+      socket.off('tooManyPlayers');
+      socket.off('invalidMove');
+      // socket.off('invalidTurn');
+
     };
   }, []);
+
+  useEffect(() => {
+    if (playerNumber === currentTurn) {
+      setTurnTimeOut(Date.now() + 10000);
+      setKeyPressDone(false);
+    }
+  }, [currentTurn, playerNumber]); // Run when currentTurn or playerNumber changes
+  
 
   useEffect(() => {
     if (gameState && playerNumber !== null) {
@@ -48,6 +69,7 @@ function App() {
     socket.on("init", (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);
+      setKeyPressDone(false);
     });
 
     socket.on("unknownGame", handleUnknownGame);
@@ -86,8 +108,12 @@ function App() {
   };
 
   const handleGameState = (state) => {
+
     const map = generateMap(state);
     setGameState({ ...state, map });
+//     setGameState(state);
+    setCurrentTurn(state.turn);
+
   };
 
   const handleGameOver = (data) => {
@@ -131,6 +157,14 @@ function App() {
     reset();
   };
 
+  const handleInvalidMove = () => {
+    alert('You cannot move to that way !-!');
+  }
+
+  // const handleInvalidTurn = () => {
+  //   alert('It\'s not your turn!, please wait for another player');
+  // }
+
   const reset = () => {
     setGameCode("");
     setPlayerNumber(null);
@@ -138,7 +172,20 @@ function App() {
     setGameState(null);
   };
 
-  // Handle key presses globally
+
+  const handleKeyPress = (event) => {
+    if (isGameStarted) {
+      if (playerNumber === currentTurn) {
+        socket.emit('keydown', event.keyCode);
+        setKeyPressDone(true);
+        setTurnTimeOut(null);
+      } else {
+        alert('It\'s not your turn!, please wait for another player');
+      }
+    }
+  };
+
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (isGameStarted) {
@@ -239,6 +286,14 @@ function App() {
     );
   };
 
+  const handleCountdownComplete = () => {
+    if (!keyPressDone) alert('TIME OUT!');
+  };
+
+  const renderer = ({ seconds }) => (
+    <span>{seconds}</span>
+  );
+
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
       {!isGameStarted ? (
@@ -264,11 +319,19 @@ function App() {
       ) : (
         <div className="text-center">
           <h1>Your game code is: {gameCode}</h1>
+
           <h2>
             You are Player {playerNumber}, {playerRole}
           </h2>
           {gameState && gameState.map && (
             <Grid map={gameState.map} getCellContent={getCellContent} />
+          
+          {playerNumber === currentTurn && turnTimeOut && (
+            <Countdown 
+                date={turnTimeOut}
+                renderer={renderer}
+                onComplete={handleCountdownComplete}
+            />
           )}
         </div>
       )}

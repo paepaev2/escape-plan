@@ -18,26 +18,34 @@ const io = socketIo(server, {
 
 const state = {};
 const clientRooms = {};
+let connectedClients = 0;
 
 // Socket.IO connection handling
-io.on("connection", (client) => {
-  console.log("A user connected:", client.id);
 
-  client.on("newGame", handleNewGame);
-  client.on("joinGame", handleJoinGame);
-  client.on("keydown", handleKeydown);
-  client.on("disconnect", () => {
-    console.log("Client disconnected:", client.id);
+io.on('connection', (client) => {
+  console.log('A user connected:', client.id);
+  connectedClients++;
+  console.log('Connected clients:', connectedClients);
+
+  client.on('newGame', handleNewGame);
+  client.on('joinGame', handleJoinGame);
+  client.on('keydown', handleKeydown);
+  client.on('disconnect', () => {
+    console.log('Client disconnected:', client.id);
+    connectedClients--;
+    console.log('Connected clients:', connectedClients);
   });
 
   function handleNewGame() {
     const roomName = makeid(5);
-    console.log(`New game created: ${roomName}`);
+    // console.log(`New game created: ${roomName}`);
 
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
 
-    console.log(state[roomName]);
+    
+    // console.log(state[roomName]);
+    
 
     client.join(roomName);
     client.number = 1;
@@ -46,20 +54,18 @@ io.on("connection", (client) => {
     client.emit("init", 1);
 
     const room = io.sockets.adapter.rooms.get(roomName);
-    console.log(
-      `${client.id} joined room: ${roomName}, Current clients: ${
-        room ? room.size : 0
-      }`
-    );
+
+    // console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
+
   }
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms.get(roomName);
     const numClients = room ? room.size : 0;
 
-    console.log(
-      `Trying to join room: ${roomName}, Current clients: ${numClients}`
-    );
+
+    // console.log(`Trying to join room: ${roomName}, Current clients: ${numClients}`);
+
 
     if (numClients === 0) {
       client.emit("unknownGame");
@@ -80,10 +86,21 @@ io.on("connection", (client) => {
 
     const player = state[roomName].players[client.number - 1];
     const move = getUpdatedPos(parseInt(keyCode));
+    const turn = state[roomName].turn;
 
-    if (move && validMove(state[roomName], client.number, move)) {
-      player.x += move.x;
-      player.y += move.y;
+    if (move) {
+      if (turn === client.number) {
+        if (validMove(state[roomName], client.number, move)) {
+          player.x += move.x;
+          player.y += move.y;
+          if (turn === 1) state[roomName].turn = 2;
+          else state[roomName].turn = 1;
+        } else {
+          io.to(client.id).emit('invalidMove');
+        }
+      } else {
+        io.to(client.id).emit('invalidTurn');
+      }
     }
   }
 });
