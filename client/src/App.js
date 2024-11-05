@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Countdown from "react-countdown";
-import { copyToClipboard } from "./components/Clipboard";
 import { io } from "socket.io-client";
-import { Button } from 'react-bootstrap';
-import GameNavbar from "./components/GameNavbar";
+import GameNavbar from "./components/Navbar/GameNavbar";
 
 const socket = io("http://localhost:8000");
 
