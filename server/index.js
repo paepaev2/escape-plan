@@ -22,18 +22,18 @@ let connectedClients = 0;
 
 // Socket.IO connection handling
 
-io.on('connection', (client) => {
-  console.log('A user connected:', client.id);
+io.on("connection", (client) => {
+  console.log("A user connected:", client.id);
   connectedClients++;
-  console.log('Connected clients:', connectedClients);
+  console.log("Connected clients:", connectedClients);
 
-  client.on('newGame', handleNewGame);
-  client.on('joinGame', handleJoinGame);
-  client.on('keydown', handleKeydown);
-  client.on('disconnect', () => {
-    console.log('Client disconnected:', client.id);
+  client.on("newGame", handleNewGame);
+  client.on("joinGame", handleJoinGame);
+  client.on("keydown", handleKeydown);
+  client.on("disconnect", () => {
+    console.log("Client disconnected:", client.id);
     connectedClients--;
-    console.log('Connected clients:', connectedClients);
+    console.log("Connected clients:", connectedClients);
   });
 
   function handleNewGame() {
@@ -43,9 +43,7 @@ io.on('connection', (client) => {
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
 
-    
     // console.log(state[roomName]);
-    
 
     client.join(roomName);
     client.number = 1;
@@ -56,16 +54,13 @@ io.on('connection', (client) => {
     const room = io.sockets.adapter.rooms.get(roomName);
 
     // console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
-
   }
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms.get(roomName);
     const numClients = room ? room.size : 0;
 
-
     // console.log(`Trying to join room: ${roomName}, Current clients: ${numClients}`);
-
 
     if (numClients === 0) {
       client.emit("unknownGame");
@@ -96,10 +91,10 @@ io.on('connection', (client) => {
           if (turn === 1) state[roomName].turn = 2;
           else state[roomName].turn = 1;
         } else {
-          io.to(client.id).emit('invalidMove');
+          io.to(client.id).emit("invalidMove");
         }
       } else {
-        io.to(client.id).emit('invalidTurn');
+        io.to(client.id).emit("invalidTurn");
       }
     }
   }

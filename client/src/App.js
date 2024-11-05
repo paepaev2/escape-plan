@@ -1,9 +1,8 @@
 // App.js
 
-import React, { useState, useEffect, useRef } from 'react';
-import Countdown from 'react-countdown';
-import { io } from 'socket.io-client';
-
+import React, { useState, useEffect, useRef } from "react";
+import Countdown from "react-countdown";
+import { io } from "socket.io-client";
 
 const socket = io("http://localhost:8000");
 
@@ -20,25 +19,28 @@ function App() {
   const [keyPressDone, setKeyPressDone] = useState(false);
 
   useEffect(() => {
-    socket.on('gameState', handleGameState);
-    socket.on('gameOver', handleGameOver);
-    socket.on('gameCode', handleGameCode);
-    socket.on('unknownGame', handleUnknownGame);
-    socket.on('tooManyPlayers', handleTooManyPlayers);
-    socket.on('invalidMove', handleInvalidMove);
-    // socket.on('invalidTurn', handleInvalidTurn);
+    socket.on("gameState", handleGameState);
+    socket.on("gameOver", handleGameOver);
+    socket.on("gameCode", handleGameCode);
+    socket.on("unknownGame", handleUnknownGame);
+    socket.on("tooManyPlayers", handleTooManyPlayers);
+    socket.on("invalidMove", handleInvalidMove);
+    socket.on("invalidTurn", handleInvalidTurn);
 
     return () => {
-      socket.off('gameState');
-      socket.off('gameOver');
-      socket.off('gameCode');
-      socket.off('unknownGame');
-      socket.off('tooManyPlayers');
-      socket.off('invalidMove');
-      // socket.off('invalidTurn');
-
+      socket.off("gameState", handleGameState);
+      socket.off("gameOver", handleGameOver);
+      socket.off("gameCode", handleGameCode);
+      socket.off("unknownGame", handleUnknownGame);
+      socket.off("tooManyPlayers", handleTooManyPlayers);
+      socket.off("invalidMove", handleInvalidMove);
+      socket.off("invalidTurn", handleInvalidTurn);
     };
   }, []);
+
+  const handleInvalidTurn = () => {
+    alert("It's not your turn!, please wait for another player");
+  };
 
   useEffect(() => {
     if (playerNumber === currentTurn) {
@@ -46,7 +48,6 @@ function App() {
       setKeyPressDone(false);
     }
   }, [currentTurn, playerNumber]); // Run when currentTurn or playerNumber changes
-  
 
   useEffect(() => {
     if (gameState && playerNumber !== null) {
@@ -108,12 +109,10 @@ function App() {
   };
 
   const handleGameState = (state) => {
-
     const map = generateMap(state);
     setGameState({ ...state, map });
-//     setGameState(state);
+    //     setGameState(state);
     setCurrentTurn(state.turn);
-
   };
 
   const handleGameOver = (data) => {
@@ -158,8 +157,8 @@ function App() {
   };
 
   const handleInvalidMove = () => {
-    alert('You cannot move to that way !-!');
-  }
+    alert("You cannot move to that way !-!");
+  };
 
   // const handleInvalidTurn = () => {
   //   alert('It\'s not your turn!, please wait for another player');
@@ -172,24 +171,83 @@ function App() {
     setGameState(null);
   };
 
-
-  const handleKeyPress = (event) => {
-    if (isGameStarted) {
-      if (playerNumber === currentTurn) {
-        socket.emit('keydown', event.keyCode);
-        setKeyPressDone(true);
-        setTurnTimeOut(null);
-      } else {
-        alert('It\'s not your turn!, please wait for another player');
-      }
-    }
-  };
-
-
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (isGameStarted) {
+      console.log("Key pressed:", event.keyCode);
+      const arrowKeys = [37, 38, 39, 40]; // Left, Up, Right, Down arrow keys
+
+      // Check if the game is started and it's the current player's turn
+      if (isGameStarted && playerNumber === currentTurn) {
+        console.log("Player number:", playerNumber);
+        let newGameState = { ...gameState };
+        console.log("Game state players:", newGameState.players);
+
+        // Use playerNumber - 1 as the index to find the player
+        const player = newGameState.players[playerNumber - 1];
+        console.log("Player:", player);
+
         socket.emit("keydown", event.keyCode);
+        setKeyPressDone(true);
+
+        let validMove = false;
+
+        if (player) {
+          // Handle movement based on the key pressed
+          switch (event.keyCode) {
+            case 38: // Up arrow
+              if (
+                player.y > 0 &&
+                newGameState.map[player.y - 1][player.x] !== 1 // Check if the target cell is not an obstacle
+              ) {
+                player.y -= 1; // Update player's y position
+                validMove = true;
+              }
+              break;
+            case 40: // Down arrow
+              if (
+                player.y < newGameState.map.length - 1 &&
+                newGameState.map[player.y + 1][player.x] !== 1
+              ) {
+                player.y += 1; // Update player's y position
+                validMove = true;
+              }
+              break;
+            case 37: // Left arrow
+              if (
+                player.x > 0 &&
+                newGameState.map[player.y][player.x - 1] !== 1
+              ) {
+                player.x -= 1; // Update player's x position
+                validMove = true;
+              }
+              break;
+            case 39: // Right arrow
+              if (
+                player.x < newGameState.map[0].length - 1 &&
+                newGameState.map[player.y][player.x + 1] !== 1
+              ) {
+                player.x += 1; // Update player's x position
+                validMove = true;
+              }
+              break;
+            default:
+              break;
+          }
+
+          if (validMove) {
+            // Regenerate the map with the updated player positions
+            const map = generateMap(newGameState);
+            setGameState({ ...newGameState, map }); // Update the game state
+            socket.emit("move", newGameState); // Emit the updated game state to the server
+            setKeyPressDone(true);
+            setTurnTimeOut(null);
+
+            // Switch turns
+            setCurrentTurn((prevTurn) => (prevTurn === 1 ? 2 : 1));
+          }
+        }
+      } else if (arrowKeys.includes(event.keyCode)) {
+        alert("It's not your turn!, please wait for another player");
       }
     };
 
@@ -198,7 +256,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isGameStarted]);
+  }, [isGameStarted, playerRole, gameState, currentTurn, playerNumber]);
 
   // Function to get the cell content based on the cell type
   const getCellContent = (cell) => {
@@ -287,12 +345,10 @@ function App() {
   };
 
   const handleCountdownComplete = () => {
-    if (!keyPressDone) alert('TIME OUT!');
+    if (!keyPressDone) alert("TIME OUT!");
   };
 
-  const renderer = ({ seconds }) => (
-    <span>{seconds}</span>
-  );
+  const renderer = ({ seconds }) => <span>{seconds}</span>;
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
@@ -319,20 +375,19 @@ function App() {
       ) : (
         <div className="text-center">
           <h1>Your game code is: {gameCode}</h1>
-
           <h2>
             You are Player {playerNumber}, {playerRole}
           </h2>
           {gameState && gameState.map && (
             <Grid map={gameState.map} getCellContent={getCellContent} />
-          
-          {playerNumber === currentTurn && turnTimeOut && (
-            <Countdown 
-                date={turnTimeOut}
-                renderer={renderer}
-                onComplete={handleCountdownComplete}
-            />
           )}
+          {/* {turnTimeOut && (
+            <Countdown
+              date={turnTimeOut}
+              renderer={renderer}
+              onComplete={handleCountdownComplete}
+            />
+          )} */}
         </div>
       )}
     </div>
