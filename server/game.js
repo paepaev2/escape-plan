@@ -16,15 +16,15 @@ function initGame() {
 }
 
 function createGameState() {
-    return {
-        players: [{}, {}],
-        tunnel: {},
-        obstacle: {},
-        turn: {},
-        scores: [0, 0],
-      
-        gridsize: GRID_SIZE
-      }
+  return {
+    players: [{}, {}],
+    tunnel: {},
+    obstacle: {},
+    turn: {},
+    scores: [0, 0],
+
+    gridsize: GRID_SIZE,
+  };
 }
 
 function gameLoop(state) {
@@ -59,25 +59,33 @@ function validMove(state, index, move) {
   // console.log(state);
   const player = state.players[index - 1];
   const tunnel = state.tunnel;
-  const obstacle = state.obstacle;
+  const obstacles = state.obstacles;
+  const gridsize = state.gridsize;
 
-  let x = player.x;
-  let y = player.y;
-  x += move.x;
-  y += move.y;
+  let x = player.x + move.x;
+  let y = player.y + move.y;
 
-  if (x < 0 || x > GRID_SIZE - 1 || y < 0 || y > GRID_SIZE - 1) {
-    // console.log('OUT!');
+  // Check boundaries
+  if (x < 0 || x >= gridsize || y < 0 || y >= gridsize) {
     return false;
   }
 
-  if (obstacle.x === x && obstacle.y === y) {
-    // console.log('BUMP!');
+  // Check for obstacles
+  let isObstacle = false;
+  if (obstacles && obstacles.length > 0) {
+    isObstacle = obstacles.some(
+      (obstacle) => obstacle.x === x && obstacle.y === y
+    );
+  } else if (state.obstacle) {
+    isObstacle = state.obstacle.x === x && state.obstacle.y === y;
+  }
+
+  if (isObstacle) {
     return false;
   }
 
-  if (player.role === "warder" && tunnel.x === x && tunnel.y === y) {
-    // console.log('WARDER CANNOT WALK THROUGH THE TUNNEL');
+  // Warden cannot move into the tunnel
+  if (player.role === "warden" && tunnel.x === x && tunnel.y === y) {
     return false;
   }
 
