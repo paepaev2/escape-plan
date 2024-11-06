@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Countdown from 'react-countdown';
 import { io } from 'socket.io-client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const socket = io('http://localhost:5000');
 
@@ -11,6 +11,9 @@ function GameLogic() {
     const WARDER_COLOUR = '#646dd9'; //blue
     const TUNNEL_COLOUR = '#64d987'; //green
     const OBSTACLE_COLOUR = '#d9cd64'; //yellow
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [gameCode, setGameCode] = useState('');
     const [isGameStarted, setIsGameStarted] = useState(false);
@@ -23,6 +26,7 @@ function GameLogic() {
     const [keyPressDone, setKeyPressDone] = useState(false);
     const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
     const [winner, setWinner] = useState(null);
+    const [nickname, setNickname] = useState('');
 
     useEffect(() => {
         socket.on('gameState', handleGameState);
@@ -43,6 +47,14 @@ function GameLogic() {
         socket.off('turnComplete');
         };
     }, []); 
+
+    useEffect(() => {
+        if (location.state && location.state.nickname) {
+            setNickname(location.state.nickname);
+        } else {
+            navigate('/');
+        }
+    }, [location.state, navigate]);
 
     useEffect(() => {
         if (playerNumber === currentTurn && bothPlayersJoined) {
@@ -95,8 +107,6 @@ function GameLogic() {
         setGameState(state);
         setCurrentTurn(state.turn);
     };
-
-    const navigate = useNavigate();
 
     const handleGameOver = (data) => {
         const { winner } = data;
@@ -234,6 +244,7 @@ function GameLogic() {
         {!isGameStarted ? (
             <div className="text-center">
             <h1>Escape Plan</h1>
+            <p>Welcome, {nickname}!</p>
             <button onClick={createGame} className="btn btn-success m-2">
                 Create New Game
             </button>
