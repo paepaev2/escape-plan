@@ -8,7 +8,7 @@ import CustomButton from "../Button";
 import Countdown from "react-countdown";
 
 function GameNavbar({ gameCode, turnTimeOut }) {
-  const renderer = ({ seconds }) => <span>{seconds}s</span>;
+  const renderer = ({ seconds }) => <span>{seconds}</span>;
 
   return (
     <Navbar style={navbarStyle} fixed="top">

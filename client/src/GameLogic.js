@@ -409,7 +409,7 @@ function GameLogic() {
               alt="Escape Plan Logo"
             />
           </Row>
-
+          <p style={{ color: "white" }}>Welcome, {nickname}</p>
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
