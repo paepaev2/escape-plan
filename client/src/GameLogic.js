@@ -7,8 +7,8 @@ import EscapePlanLogo from "./assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
-
-const socket = io("http://localhost:8000");
+import { socket } from "./socket";
+import GameOverPage from "./GameOverPage";
 
 function GameLogic() {
   const BG_COLOUR = "#231f20";
@@ -26,7 +26,8 @@ function GameLogic() {
   const [gameState, setGameState] = useState(null);
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
   const [winner, setWinner] = useState(null);
-  const [nickname, setNickname] = useState('');
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [nickname, setNickname] = useState("");
 
   const canvasRef = useRef(null);
   const [currentTurn, setCurrentTurn] = useState(null);
@@ -56,7 +57,7 @@ function GameLogic() {
   }, []);
 
   useEffect(() => {
-    const savedNickname = localStorage.getItem('nickname');
+    const savedNickname = localStorage.getItem("nickname");
     if (savedNickname) {
       setNickname(savedNickname);
     }
@@ -159,39 +160,18 @@ function GameLogic() {
     socket.emit("setScore", number);
     alert(`Game Over! Player ${number}, ${role} won!`);
 
-    socket.on("gameState", (state) => {
-      setGameState(state);
-      setWinner([number, role]);
-    });
+    setWinner({ number, role });
+    setIsGameOver(true);
   };
 
-  useEffect(() => {
-    if (winner && gameState) {
-      const number = winner[0];
-      const role = winner[1];
-      navigate("/gameover", { state: { number, role, gameState } });
-      setWinner(null);
-    }
-  }, [winner, gameState]);
-
-  const handleTurnCompleted = (playerNumber) => {
-    setKeyPressDone(false);
-    const next = playerNumber === 1 ? 2 : 1;
-    setCurrentTurn((next));
-    setTurnTimeOut(Date.now() + 10000);
-    };
-
-    const handleCountdownComplete = () => {
-        if (!keyPressDone && playerNumber === currentTurn) {
-        alert('TIME OUT!');
-        socket.emit('timeout', playerNumber);
-        }
-    };
-
-    const renderer = ({ seconds }) => (
-        <span>{seconds}</span>
-    );
-
+  // useEffect(() => {
+  //   if (winner && gameState) {
+  //     const number = winner[0];
+  //     const role = winner[1];
+  //     navigate("/gameover", { state: { number, role, gameState } });
+  //     setWinner(null);
+  //   }
+  // }, [winner, gameState]);
 
   const handleGameCode = (code) => {
     setGameCode(code);
@@ -221,6 +201,7 @@ function GameLogic() {
     setTurnTimeOut(null);
     setKeyPressDone(false);
     setWinner(null);
+    setIsGameOver(false);
   };
 
   useEffect(() => {
@@ -397,6 +378,22 @@ function GameLogic() {
     );
   };
 
+  const continueGame = () => {
+    console.log("Continue game");
+    socket.emit("continueGame", gameState); // Emit the current game state to continue
+    setIsGameOver(false);
+    setWinner(null);
+    setKeyPressDone(false);
+    // Ensure both players are marked as joined
+    setBothPlayersJoined(true);
+  };
+  // Handler to restart the game
+  const restartGame = () => {
+    socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
+    reset();
+    navigate("/game"); // Go back to the main game page with fresh start
+  };
+
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
       <RandomBackgroundComponent />
@@ -421,7 +418,6 @@ function GameLogic() {
             Create New Game
           </button>
           <div>OR</div>
-
           <input
             type="text"
             placeholder="Enter Game Code"
@@ -436,34 +432,41 @@ function GameLogic() {
           </button>
         </div>
       ) : (
-        <div className="text-center">
-          <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
-
-          <Row>
-            <Col>
-              {gameState && gameState.map && (
-                <Grid map={gameState.map} getCellContent={getCellContent} />
-              )}
-              {/* {isGameStarted && bothPlayersJoined && turnTimeOut && (
-                <Countdown 
-                    date={turnTimeOut}
-                    renderer={renderer}
-                    onComplete={handleCountdownComplete}
-                />
-            )} */}
-            </Col>
-            <Col
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
-              }}
-            >
-              <PlayerInfo playerNumber={playerNumber} playerRole={playerRole} />
-            </Col>
-          </Row>
-        </div>
+        <>
+          {isGameOver ? (
+            <GameOverPage
+              number={winner.number}
+              role={winner.role}
+              gameState={gameState}
+              continueGame={continueGame}
+              restartGame={restartGame}
+            />
+          ) : (
+            <div className="text-center">
+              <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
+              <Row>
+                <Col>
+                  {gameState && gameState.map && (
+                    <Grid map={gameState.map} getCellContent={getCellContent} />
+                  )}
+                </Col>
+                <Col
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "column",
+                  }}
+                >
+                  <PlayerInfo
+                    playerNumber={playerNumber}
+                    playerRole={playerRole}
+                  />
+                </Col>
+              </Row>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

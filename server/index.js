@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -28,13 +27,14 @@ io.on("connection", (client) => {
   connectedClients++;
   console.log("Connected clients:", connectedClients);
 
-  client.on('newGame', handleNewGame);
-  client.on('joinGame', handleJoinGame);
-  client.on('keydown', handleKeydown);
-  client.on('timeout' , handleTimeout);
-  client.on('setScore', handleSetScore);
-  client.on('disconnect', () => {
-    console.log('Client disconnected:', client.id);
+  client.on("newGame", handleNewGame);
+  client.on("joinGame", handleJoinGame);
+  client.on("keydown", handleKeydown);
+  client.on("timeout", handleTimeout);
+  client.on("setScore", handleSetScore);
+  client.on("continueGame", handleContinueGame);
+  client.on("disconnect", () => {
+    console.log("Client disconnected:", client.id);
     connectedClients--;
     console.log("Connected clients:", connectedClients);
   });
@@ -42,24 +42,23 @@ io.on("connection", (client) => {
   function handleTimeout(lostNum) {
     let winner;
     const roomName = clientRooms[client.id];
-    if (state[roomName].players[lostNum-1].role === 'prisoner') {
+    if (state[roomName].players[lostNum - 1].role === "prisoner") {
       winner = lostNum === 1 ? 2.2 : 2.1;
     } else {
       winner = lostNum === 1 ? 1.2 : 1.1;
     }
-    
-    io.sockets.in(roomName).emit('gameOver', { winner });
+
+    io.sockets.in(roomName).emit("gameOver", { winner });
   }
 
   function handleSetScore(lostNum) {
     if (!scoreUpdated) {
       const roomName = clientRooms[client.id];
-      state[roomName].scores[lostNum-1] += 1;
+      state[roomName].scores[lostNum - 1] += 1;
 
       const finalGameState = state[roomName];
-      console.log(finalGameState); 
-      io.sockets.in(roomName).emit('gameState', finalGameState);
-      // io.sockets.in(roomName).emit('result', finalGameState);
+      console.log(finalGameState);
+      io.sockets.in(roomName).emit("gameState", finalGameState);
     }
 
     scoreUpdated = true;
@@ -67,12 +66,9 @@ io.on("connection", (client) => {
 
   function handleNewGame() {
     const roomName = makeid(5);
-    // console.log(`New game created: ${roomName}`);
 
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
-
-    // console.log(state[roomName]);
 
     client.join(roomName);
     client.number = 1;
@@ -81,15 +77,11 @@ io.on("connection", (client) => {
     client.emit("init", 1);
 
     const room = io.sockets.adapter.rooms.get(roomName);
-
-    // console.log(`${client.id} joined room: ${roomName}, Current clients: ${room ? room.size : 0}`);
   }
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms.get(roomName);
     const numClients = room ? room.size : 0;
-
-    // console.log(`Trying to join room: ${roomName}, Current clients: ${numClients}`);
 
     if (numClients === 0) {
       client.emit("unknownGame");
@@ -99,8 +91,8 @@ io.on("connection", (client) => {
       clientRooms[client.id] = roomName;
       client.join(roomName);
       client.number = 2;
-      client.emit('init', 2); // Player 2
-      client.to(roomName).emit('bothPlayersJoined');
+      client.emit("init", 2); // Player 2
+      client.to(roomName).emit("bothPlayersJoined");
       startGameInterval(roomName);
     }
   }
@@ -121,7 +113,7 @@ io.on("connection", (client) => {
           if (turn === 1) state[roomName].turn = 2;
           else state[roomName].turn = 1;
 
-          client.to(roomName).emit('turnCompleted');
+          client.to(roomName).emit("turnCompleted");
         } else {
           io.to(client.id).emit("invalidMove");
         }
@@ -129,6 +121,19 @@ io.on("connection", (client) => {
         io.to(client.id).emit("invalidTurn");
       }
     }
+  }
+
+  function handleContinueGame(gameState) {
+    const roomName = clientRooms[client.id];
+    if (!roomName) return;
+
+    // Reset the game state while keeping the scores
+    const newGameState = initGame();
+    newGameState.scores = gameState.scores; // Keep the same scores
+    state[roomName] = newGameState;
+
+    io.sockets.in(roomName).emit("gameState", state[roomName]);
+    startGameInterval(roomName);
   }
 });
 
@@ -140,7 +145,6 @@ function startGameInterval(roomName) {
     if (winner) {
       io.sockets.in(roomName).emit("gameOver", { winner });
       clearInterval(intervalId);
-      // delete state[roomName];
     } else {
       io.sockets.in(roomName).emit("gameState", state[roomName]);
     }

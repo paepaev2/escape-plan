@@ -1,32 +1,15 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { socket } from "./socket";
 
-const socket = io("http://localhost:8000");
-
-function GameOverPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { number, role, gameState } = location.state || {};
-
-  // console.log('gameState in GameOverPage: ', gameState);
-
+function GameOverPage({ number, role, gameState, continueGame, restartGame }) {
   const score1 = gameState?.scores[0];
   const score2 = gameState?.scores[1];
 
-  const continueGame = () => {
-    socket.emit("continueGame", gameState); // Emit the current game state to continue
-    navigate("/game"); // Go back to the main game page
-  };
-
-  // Handler to restart the game
-  const restartGame = () => {
-    socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
-    navigate("/game"); // Go back to the main game page with fresh start
-  };
-
   return (
-    <div className="text-center">
+    <div
+      className="text-center"
+      style={{ backgroundColor: "#fff", padding: "20px" }}
+    >
       <h1>Game Over!</h1>
       <p>
         Player {number}, {role} won!
