@@ -5,15 +5,18 @@ import { copyToClipboard } from "./Clipboard";
 import timer from "../../assets/game/navbar/timer.png";
 import SettingsMenu from "./SettingsMenu";
 import CustomButton from "../Button";
+import Countdown from "react-countdown";
 
-function GameNavbar({ gameCode }) {
+function GameNavbar({ gameCode, turnTimeOut }) {
+  const renderer = ({ seconds }) => <span>{seconds}s</span>;
+
   return (
     <Navbar style={navbarStyle}>
       <Container className="justify-content-between">
         {/* Timer */}
         <CustomButton>
           <img src={timer} style={iconButtonStyle} />
-          105s
+          {turnTimeOut && <Countdown date={turnTimeOut} renderer={renderer} />}
         </CustomButton>
 
         {/* Game Code */}

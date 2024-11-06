@@ -6,107 +6,93 @@ import RandomBackgroundComponent from "./components/GameBackgrounds";
 import EscapePlanLogo from "./assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const socket = io("http://localhost:8000");
 
 function GameLogic() {
-    const BG_COLOUR = '#231f20';
-    const PRISONER_COLOUR = '#d96464'; //red
-    const WARDER_COLOUR = '#646dd9'; //blue
-    const TUNNEL_COLOUR = '#64d987'; //green
-    const OBSTACLE_COLOUR = '#d9cd64'; //yellow
-  
-    const navigate = useNavigate();
-    const location = useLocation();
+  const BG_COLOUR = "#231f20";
+  const PRISONER_COLOUR = "#d96464"; //red
+  const WARDER_COLOUR = "#646dd9"; //blue
+  const TUNNEL_COLOUR = "#64d987"; //green
+  const OBSTACLE_COLOUR = "#d9cd64"; //yellow
 
-    const [gameCode, setGameCode] = useState('');
-    const [isGameStarted, setIsGameStarted] = useState(false);
-    const [playerNumber, setPlayerNumber] = useState(null);
-    const [playerRole, setPlayerRole] = useState(null);
-    const [gameState, setGameState] = useState(null);
-    const canvasRef = useRef(null);
-    const [currentTurn, setCurrentTurn] = useState(null);
-    const [turnTimeOut, setTurnTimeOut] = useState(null);
-    const [keyPressDone, setKeyPressDone] = useState(false);
-    const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
-    const [winner, setWinner] = useState(null);
-    const [nickname, setNickname] = useState('');
-  
-  useEffect(() => {
-        socket.on('gameState', handleGameState);
-        socket.on('gameOver', handleGameOver);
-        socket.on('gameCode', handleGameCode);
-        socket.on('unknownGame', handleUnknownGame);
-        socket.on('tooManyPlayers', handleTooManyPlayers);
-        socket.on('invalidMove', handleInvalidMove);
-        socket.on('turnCompleted', handleTurnCompleted);
+  const [gameCode, setGameCode] = useState("");
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [playerNumber, setPlayerNumber] = useState(null);
+  const [playerRole, setPlayerRole] = useState(null);
+  const [gameState, setGameState] = useState(null);
+  const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
+  const [winner, setWinner] = useState(null);
 
-        return () => {
-        socket.off('gameState');
-        socket.off('gameOver');
-        socket.off('gameCode');
-        socket.off('unknownGame');
-        socket.off('tooManyPlayers');
-        socket.off('invalidMove');
-        socket.off('turnComplete');
-        };
-    }, []); 
+  const canvasRef = useRef(null);
+  const [currentTurn, setCurrentTurn] = useState(null);
+  const [turnTimeOut, setTurnTimeOut] = useState(null);
+  const [keyPressDone, setKeyPressDone] = useState(false);
 
   useEffect(() => {
-        if (location.state && location.state.nickname) {
-            setNickname(location.state.nickname);
-        } else {
-            navigate('/');
-        }
-    }, [location.state, navigate]);
+    socket.on("gameState", handleGameState);
+    socket.on("gameOver", handleGameOver);
+    socket.on("gameCode", handleGameCode);
+    socket.on("unknownGame", handleUnknownGame);
+    socket.on("tooManyPlayers", handleTooManyPlayers);
+    socket.on("invalidMove", handleInvalidMove);
+    socket.on("invalidTurn", handleInvalidTurn);
+    socket.on("bothPlayersJoined", () => {
+      setBothPlayersJoined(true);
+    });
 
-    useEffect(() => {
-        if (playerNumber === currentTurn && bothPlayersJoined) {
-        setTurnTimeOut(Date.now() + 10000);
-        setKeyPressDone(false);
-        }
-    }, [currentTurn, playerNumber, bothPlayersJoined]); // Run when currentTurn or playerNumber changes
-    
+    return () => {
+      socket.off("gameState", handleGameState);
+      socket.off("gameOver", handleGameOver);
+      socket.off("gameCode", handleGameCode);
+      socket.off("unknownGame", handleUnknownGame);
+      socket.off("tooManyPlayers", handleTooManyPlayers);
+      socket.off("invalidMove", handleInvalidMove);
+      socket.off("invalidTurn", handleInvalidTurn);
+      socket.off("bothPlayersJoined");
+    };
+  }, []);
 
-    useEffect(() => {
-        if (gameState && gameState.players.length === 2) {
-        const role = gameState.players[playerNumber - 1]?.role;
-        setPlayerRole(role);
-        }
-    }, [gameState, playerNumber]); // Run when gameState or playerNumber changes
+  const handleInvalidTurn = () => {
+    alert("It's not your turn!, please wait for another player");
+  };
 
-    useEffect(() => {
-        socket.on('bothPlayersJoined', () => {
-        setBothPlayersJoined(true);
-        });
+  useEffect(() => {
+    if (playerNumber === currentTurn && bothPlayersJoined) {
+      setTurnTimeOut(Date.now() + 10000);
+      setKeyPressDone(false);
+    }
+  }, [currentTurn, playerNumber, bothPlayersJoined]); // Run when currentTurn or playerNumber changes
 
-        return () => {
-        socket.off('bothPlayersJoined');
-        };
-    }, []);
-  
+  useEffect(() => {
+    if (gameState && playerNumber !== null) {
+      const role = gameState.players[playerNumber - 1]?.role;
+      setPlayerRole(role);
+    }
+  }, [gameState, playerNumber]);
+
   const createGame = () => {
-        socket.emit('newGame');
-        socket.on('gameCode', (code) => {
-        setGameCode(code);
-        setPlayerNumber(1);
-        setIsGameStarted(true);
-        });
-    };
+    socket.emit("newGame");
+    socket.on("gameCode", (code) => {
+      setGameCode(code);
+      setPlayerNumber(1);
+      setIsGameStarted(true);
+    });
+  };
 
-    const joinGame = (roomName) => {
-        socket.emit('joinGame', roomName);
-        socket.on('init', (playerNum) => {
-        setPlayerNumber(playerNum);
-        setIsGameStarted(true);
-        setBothPlayersJoined(true);
-        setKeyPressDone(false);
-        });
+  const joinGame = (roomName) => {
+    socket.emit("joinGame", roomName);
+    socket.on("init", (playerNum) => {
+      setPlayerNumber(playerNum);
+      setIsGameStarted(true);
+      setBothPlayersJoined(true);
+      setKeyPressDone(false);
+    });
 
-        socket.on('unknownGame', handleUnknownGame);
-        socket.on('tooManyPlayers', handleTooManyPlayers);
-    };
+    socket.on("unknownGame", handleUnknownGame);
+    socket.on("tooManyPlayers", handleTooManyPlayers);
+  };
 
   const generateMap = (state) => {
     const size = state.gridsize;
@@ -138,65 +124,56 @@ function GameLogic() {
 
     return map;
   };
-  
-
-    const handleGameOver = (data) => {
-        const { winner } = data;
-
-        let number;
-        let role;
-        if (winner === 1.1) {
-        number = 1;
-        role = 'prisoner';
-        } else if (winner === 1.2) {
-        number = 2;
-        role = 'prisoner';
-        } else if (winner === 2.1) {
-        number = 1;
-        role = 'warder';
-        } else if (winner === 2.2) {
-        number = 2;
-        role = 'warder';
-        } else {
-        role = 'error';
-        }
-
-        socket.emit('setScore', number);
-        alert(`Game Over! Player ${number}, ${role} won!`);
-        // setIsGameStarted(false);
-        // setBothPlayersJoined(false); 
-
-        socket.on('gameState', (state) => {
-        setGameState(state);
-        setWinner([number, role]);
-        });
-    };
-  
-  useEffect(() => {
-        if (winner && gameState) {
-        // console.log('Updated gameState after gameOver:', gameState);
-        // console.log('round winner: ', winner);
-
-        const number = winner[0];
-        const role = winner[1];
-        navigate("/gameover", { state: { number, role, gameState } });
-        setWinner(null);
-        }
-    }, [winner, gameState]);
-
 
   const handleGameState = (state) => {
     const map = generateMap(state);
     setGameState({ ...state, map });
-    //     setGameState(state);
     setCurrentTurn(state.turn);
   };
 
+  const navigate = useNavigate();
+
+  const handleGameOver = (data) => {
+    const { winner } = data;
+
+    let number;
+    let role;
+    if (winner === 1.1) {
+      number = 1;
+      role = "prisoner";
+    } else if (winner === 1.2) {
+      number = 2;
+      role = "prisoner";
+    } else if (winner === 2.1) {
+      number = 1;
+      role = "warden";
+    } else if (winner === 2.2) {
+      number = 2;
+      role = "warden";
+    } else {
+      role = "error";
+    }
+
+    socket.emit("setScore", number);
+    alert(`Game Over! Player ${number}, ${role} won!`);
+
+    socket.on("gameState", (state) => {
+      setGameState(state);
+      setWinner([number, role]);
+    });
+  };
+
+  useEffect(() => {
+    if (winner && gameState) {
+      const number = winner[0];
+      const role = winner[1];
+      navigate("/gameover", { state: { number, role, gameState } });
+      setWinner(null);
+    }
+  }, [winner, gameState]);
 
   const handleGameCode = (code) => {
     setGameCode(code);
-//     setPlayerNumber(1);
-//     setIsGameStarted(true);
   };
 
   const handleUnknownGame = () => {
@@ -213,35 +190,17 @@ function GameLogic() {
     alert("You cannot move to that way !-!");
   };
 
-  const handleTurnCompleted = (playerNumber) => {
-        setKeyPressDone(false);
-        const next = playerNumber === 1 ? 2 : 1;
-        setCurrentTurn((next));
-        setTurnTimeOut(Date.now() + 10000);
-    };
-
-    const handleCountdownComplete = () => {
-        if (!keyPressDone && playerNumber === currentTurn) {
-        alert('TIME OUT!');
-        socket.emit('timeout', playerNumber);
-        }
-    };
-
-    const renderer = ({ seconds }) => (
-        <span>{seconds}</span>
-    );
-
   const reset = () => {
-        setGameCode('');
-        setPlayerNumber(null);
-        setIsGameStarted(false);
-        setBothPlayersJoined(false);
-        setGameState(null);
-        setCurrentTurn(null);
-        setTurnTimeOut(null);
-        setKeyPressDone(false);
-        setWinner(null);
-    };
+    setGameCode("");
+    setPlayerNumber(null);
+    setIsGameStarted(false);
+    setBothPlayersJoined(false);
+    setGameState(null);
+    setCurrentTurn(null);
+    setTurnTimeOut(null);
+    setKeyPressDone(false);
+    setWinner(null);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -418,7 +377,10 @@ function GameLogic() {
   };
 
   const handleCountdownComplete = () => {
-    if (!keyPressDone) alert("TIME OUT!");
+    if (!keyPressDone && playerNumber === currentTurn) {
+      alert("TIME OUT!");
+      socket.emit("timeout", playerNumber);
+    }
   };
 
   const renderer = ({ seconds }) => <span>{seconds}</span>;
@@ -442,7 +404,6 @@ function GameLogic() {
               alt="Escape Plan Logo"
             />
           </Row>
-          <p>Welcome, {nickname}!</p>
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
@@ -463,19 +424,12 @@ function GameLogic() {
         </div>
       ) : (
         <div className="text-center">
-          <GameNavbar gameCode={gameCode} />
+          <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
           <Row>
             <Col>
               {gameState && gameState.map && (
                 <Grid map={gameState.map} getCellContent={getCellContent} />
               )}
-              {/* {turnTimeOut && (
-            <Countdown
-              date={turnTimeOut}
-              renderer={renderer}
-              onComplete={handleCountdownComplete}
-            />
-          )} */}
             </Col>
             <Col
               style={{
