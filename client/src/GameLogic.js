@@ -417,12 +417,6 @@ function GameLogic() {
     );
   };
 
-  const handleCountdownComplete = () => {
-    if (!keyPressDone) alert("TIME OUT!");
-  };
-
-  const renderer = ({ seconds }) => <span>{seconds}</span>;
-
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
       <RandomBackgroundComponent />
@@ -469,13 +463,13 @@ function GameLogic() {
               {gameState && gameState.map && (
                 <Grid map={gameState.map} getCellContent={getCellContent} />
               )}
-              {/* {turnTimeOut && (
-            <Countdown
-              date={turnTimeOut}
-              renderer={renderer}
-              onComplete={handleCountdownComplete}
-            />
-          )} */}
+              {isGameStarted && bothPlayersJoined && playerNumber === currentTurn && turnTimeOut && (
+                <Countdown 
+                    date={turnTimeOut}
+                    renderer={renderer}
+                    onComplete={handleCountdownComplete}
+                />
+            )}
             </Col>
             <Col
               style={{
