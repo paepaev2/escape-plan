@@ -16,14 +16,15 @@ function initGame() {
 }
 
 function createGameState() {
-  return {
-    players: [{}, {}],
-    tunnel: {},
-    obstacle: {},
-    turn: {},
-
-    gridsize: GRID_SIZE,
-  };
+    return {
+        players: [{}, {}],
+        tunnel: {},
+        obstacle: {},
+        turn: {},
+        scores: [0, 0],
+      
+        gridsize: GRID_SIZE
+      }
 }
 
 function gameLoop(state) {
