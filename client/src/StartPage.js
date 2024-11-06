@@ -1,39 +1,63 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Col, Row } from "react-bootstrap";
+import HomepageLayout from "./components/HomepageLayout";
 
 const StartPage = () => {
-    const [nickname, setNickname] = useState('');
-    const navigate = useNavigate();
+  const [nickname, setNickname] = useState("");
+  const navigate = useNavigate();
 
-    const handleNicknameChange = (e) => {
-        setNickname(e.target.value);
-    };
+  const handleNicknameChange = (e) => {
+    setNickname(e.target.value);
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-        if (nickname.trim() === '') {
-            alert('Please enter your nickname!');
-            return;
-        }
+    const enterNickname = () => toast.error("Please enter your nickname!");
 
-        navigate('/game', { state: { nickname } });
-    };
+    if (nickname.trim() === "") {
+      console.log("Nickname is empty, showing toast");
+      toast.info("Please enter your nickname!", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
 
-    return (
-        <div>
-            <h1>ESCAPE PLAN</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Enter your nickname"
-                    value={nickname}
-                    onChange={handleNicknameChange}
-                />
-                <button type="submit">Start Game</button>
-            </form>
-        </div>
-    );
+    navigate("/game", { state: { nickname } });
+  };
+
+  return (
+    <div>
+      <HomepageLayout>
+        <Col md={2}>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Enter your nickname"
+              value={nickname}
+              onChange={handleNicknameChange}
+              style={{
+                fontSize: "48",
+              }}
+            />
+            <button
+              type="submit"
+              style={{ padding: "4px 12px", marginTop: "12px" }}
+            >
+              Start Game
+            </button>
+          </form>
+        </Col>
+      </HomepageLayout>
+    </div>
+  );
 };
 
 export default StartPage;

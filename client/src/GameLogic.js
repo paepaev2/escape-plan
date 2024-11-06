@@ -407,7 +407,9 @@ function GameLogic() {
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
-          <div>OR</div>
+          <div>
+            <text style={{ color: "#ffffff" }}>OR</text>
+          </div>
 
           <input
             type="text"
