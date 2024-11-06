@@ -7,6 +7,7 @@ import {
   Routes,
 } from "react-router-dom";
 import Game from "./GameLogic";
+
 // import Game from "./StartPage";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Game />} />
     </Routes>
+
   );
 }
 

@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css'; // If you're using Bootstrap for styling
+import './App.css'; // Ensure global CSS is imported
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import StartPage from './StartPage';
 import GameOverPage from './GameOverPage'; 
