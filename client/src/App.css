@@ -38,12 +38,12 @@
 } */
 
 @font-face {
-  font-family: 'Minecraft';
-  src: url('./assets/fonts/Minecraft.ttf') format('truetype');
+  font-family: "Minecraft";
+  src: url("./assets/fonts/Minecraft.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 body {
-  font-family: 'Minecraft';
+  font-family: "Minecraft";
 }

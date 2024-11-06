@@ -8,6 +8,8 @@ import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
+import { toast } from "react-toastify";
+import CustomToastContainer from "./CustomToastContainer";
 
 const socket = io("http://localhost:8000");
 
@@ -56,7 +58,7 @@ function GameLogic() {
   }, []);
 
   const handleInvalidTurn = () => {
-    alert("It's not your turn!, please wait for another player");
+    toast.error("It's not your turn!, please wait for another player");
   };
 
   useEffect(() => {
@@ -156,7 +158,7 @@ function GameLogic() {
     }
 
     socket.emit("setScore", number);
-    alert(`Game Over! Player ${number}, ${role} won!`);
+    toast.error(`Game Over! Player ${number}, ${role} won!`);
 
     socket.on("gameState", (state) => {
       setGameState(state);
@@ -178,17 +180,17 @@ function GameLogic() {
   };
 
   const handleUnknownGame = () => {
-    alert("Unknown Game Code.");
+    toast.error("Unknown Game Code.");
     reset();
   };
 
   const handleTooManyPlayers = () => {
-    alert("This game already has two players.");
+    toast.error("This game already has two players.");
     reset();
   };
 
   const handleInvalidMove = () => {
-    alert("You cannot move to that way !-!");
+    toast.error("You cannot move to that way !-!");
   };
 
   const reset = () => {
@@ -279,7 +281,7 @@ function GameLogic() {
           }
         }
       } else if (arrowKeys.includes(event.keyCode)) {
-        alert("It's not your turn!, please wait for another player");
+        toast.error("It's not your turn!, please wait for another player");
       }
     };
 
@@ -379,7 +381,7 @@ function GameLogic() {
 
   const handleCountdownComplete = () => {
     if (!keyPressDone && playerNumber === currentTurn) {
-      alert("TIME OUT!");
+      toast.error("TIME OUT!");
       socket.emit("timeout", playerNumber);
     }
   };
@@ -388,6 +390,7 @@ function GameLogic() {
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
+      <CustomToastContainer />
       <RandomBackgroundComponent />
       {!isGameStarted ? (
         <div className="text-center">
