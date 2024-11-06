@@ -3,7 +3,7 @@ import background1 from "../assets/backgrounds/bg1.png";
 import background2 from "../assets/backgrounds/bg2.gif";
 import background3 from "../assets/backgrounds/bg3.png";
 
-function RandomBackgroundComponent({ children }) {
+function RandomBackgroundComponent() {
   const backgrounds = [background1, background2, background3];
   const [randomBackground, setRandomBackground] = useState(null);
 
@@ -24,12 +24,13 @@ function RandomBackgroundComponent({ children }) {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     zIndex: -1, // Ensures it is behind all other elements
+    display: "flex",
+    justifyContent: "center", /* Horizontally centers the text */
+    alignItems: "center", /* Vertically centers the text */
   };
 
   return (
-    <div style={backgroundStyle} aria-hidden="true">
-      {children}
-    </div>
+    <div style={backgroundStyle} />
   );
 }
 

@@ -56,6 +56,8 @@ const modalStyle = {
   backgroundSize: "cover",
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
+  width: "30%",
+  height: "70%",
 
   padding: "100px",
   flexDirection: "column",
@@ -86,7 +88,7 @@ const overrideButtonStyle = {
 const buttonStyle = {
   background: "none",
   border: "none",
-  padding: "32px",
+  padding: "24px",
   cursor: "pointer",
-  width: "300px",
+  width: "200px",
 };

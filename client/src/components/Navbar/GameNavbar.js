@@ -10,13 +10,9 @@ function GameNavbar({ gameCode }) {
   return (
     <Navbar style={navbarStyle}>
       <Container className="justify-content-between">
-
         {/* Timer */}
         <CustomButton>
-          <img
-            src={timer}
-            style={iconButtonStyle}
-          />
+          <img src={timer} style={iconButtonStyle} />
           105s
         </CustomButton>
 
@@ -46,6 +42,11 @@ function GameNavbar({ gameCode }) {
 const navbarStyle = {
   color: "#ffffff",
   padding: "24px 0",
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  zIndex: 2,
 };
 
 const gameCodeStyle = {

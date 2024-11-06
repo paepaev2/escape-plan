@@ -3,6 +3,9 @@ import Countdown from "react-countdown";
 import { io } from "socket.io-client";
 import GameNavbar from "./components/Navbar/GameNavbar";
 import RandomBackgroundComponent from "./components/GameBackgrounds";
+import EscapePlanLogo from "./assets/fonts/escapeplan.png";
+import { Col, Row } from "react-bootstrap";
+import PlayerInfo from "./components/PlayerInfo";
 
 const socket = io("http://localhost:8000");
 
@@ -317,9 +320,10 @@ function GameLogic() {
           display: "grid",
           gridTemplateColumns: `repeat(${map[0].length}, 1fr)`,
           gap: "1px",
-          width: "500px",
-          height: "500px",
+          width: "100%",
+          height: "100%",
           margin: "0 auto",
+          border: "4px dashed #ffffff",
         }}
       >
         {map.map((row, rowIndex) =>
@@ -352,13 +356,28 @@ function GameLogic() {
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
+      <RandomBackgroundComponent />
       {!isGameStarted ? (
         <div className="text-center">
-          <h1>Escape Plan</h1>
+          <Row
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "20px",
+            }}
+          >
+            <img
+              src={EscapePlanLogo}
+              style={{ width: "50%" }}
+              alt="Escape Plan Logo"
+            />
+          </Row>
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
           <div>OR</div>
+
           <input
             type="text"
             placeholder="Enter Game Code"
@@ -374,12 +393,9 @@ function GameLogic() {
         </div>
       ) : (
         <div className="text-center">
-          <RandomBackgroundComponent>
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <GameNavbar gameCode={gameCode} />
-              <h2>
-                You are Player {playerNumber}, {playerRole}
-              </h2>
+          <GameNavbar gameCode={gameCode} />
+          <Row>
+            <Col>
               {gameState && gameState.map && (
                 <Grid map={gameState.map} getCellContent={getCellContent} />
               )}
@@ -390,8 +406,18 @@ function GameLogic() {
               onComplete={handleCountdownComplete}
             />
           )} */}
-            </div>
-          </RandomBackgroundComponent>
+            </Col>
+            <Col
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <PlayerInfo playerNumber={playerNumber} playerRole={playerRole} />
+            </Col>
+          </Row>
         </div>
       )}
     </div>
