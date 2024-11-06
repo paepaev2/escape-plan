@@ -7,6 +7,7 @@ import EscapePlanLogo from "./assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
+import LoadingPage from "./LoadingPage";
 
 const socket = io("http://localhost:8000");
 
