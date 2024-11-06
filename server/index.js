@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
-const { gameLoop, validMove, getUpdatedPos, initGame } = require('./game');
+const { gameLoop, validMove, getUpdatedPos, initGame, randomPos } = require('./game');
 const { makeid } = require('./utils');
 
 // Set up the Express app and server
@@ -32,11 +32,28 @@ io.on('connection', (client) => {
   client.on('keydown', handleKeydown);
   client.on('timeout' , handleTimeout);
   client.on('setScore', handleSetScore);
+  client.on('continueGame', handleContinueGame);
   client.on('disconnect', () => {
     console.log('Client disconnected:', client.id);
     connectedClients--;
     console.log('Connected clients:', connectedClients);
   });
+
+  function handleContinueGame(gameState, number) {
+    const roomName = clientRooms[client.id];
+    state[roomName] = gameState;
+    // console.log('gameState: ', gameState);
+    randomPos(state[roomName]);
+    state[roomName].scores = gameState.scores;
+    state[roomName].turn = number;
+
+    console.log('state[roomName]:', state[roomName]);
+    // console.log(clientRooms);
+    client.emit('continue', state[roomName]);
+
+    // io.sockets.in(roomName).emit('continue', state[roomName]);
+    startGameInterval(roomName);
+  }
 
   function handleTimeout(lostNum) {
     let winner;

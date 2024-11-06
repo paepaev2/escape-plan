@@ -15,8 +15,9 @@ function GameOverPage() {
     const score2 = gameState?.scores[1];
 
     const continueGame = () => {
-        socket.emit('continueGame', gameState);  // Emit the current game state to continue
-        navigate("/game"); // Go back to the main game page
+        socket.emit('continueGame', gameState, number);
+        navigate("/");
+        // navigate("/", {state: {gameState, number}});
     };
 
     // Handler to restart the game

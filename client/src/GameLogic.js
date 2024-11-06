@@ -32,6 +32,7 @@ function GameLogic() {
         socket.on('tooManyPlayers', handleTooManyPlayers);
         socket.on('invalidMove', handleInvalidMove);
         socket.on('turnCompleted', handleTurnCompleted);
+        socket.on('continue', handleContinue);
 
         return () => {
         socket.off('gameState');
@@ -41,8 +42,19 @@ function GameLogic() {
         socket.off('tooManyPlayers');
         socket.off('invalidMove');
         socket.off('turnComplete');
+        socket.off('continue');
         };
     }, []); 
+
+    const handleContinue = (state) => {
+        setTurnTimeOut(null);
+        setKeyPressDone(false);
+        setGameState(state);
+        setBothPlayersJoined(true);
+        setCurrentTurn(state.turn);
+        setPlayerRole(state.players[playerNumber-1].role);
+        console.log('gameState on client: ', gameState);
+    };
 
     useEffect(() => {
         if (playerNumber === currentTurn && bothPlayersJoined) {
