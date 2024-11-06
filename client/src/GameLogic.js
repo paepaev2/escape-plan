@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
 import { toast } from "react-toastify";
 import CustomToastContainer from "./components/Toast/CustomToastContainer";
-
-const socket = io("http://localhost:8000");
+import { socket } from "./socket";
+import GameOverPage from "./GameOverPage";
 
 function GameLogic() {
   const BG_COLOUR = "#231f20";
@@ -27,6 +27,8 @@ function GameLogic() {
   const [gameState, setGameState] = useState(null);
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [nickname, setNickname] = useState("");
 
   const canvasRef = useRef(null);
   const [currentTurn, setCurrentTurn] = useState(null);
@@ -57,9 +59,12 @@ function GameLogic() {
     };
   }, []);
 
-  const handleInvalidTurn = () => {
-    toast.error("It's not your turn!, please wait for another player");
-  };
+  useEffect(() => {
+    const savedNickname = localStorage.getItem("nickname");
+    if (savedNickname) {
+      setNickname(savedNickname);
+    }
+  }, []);
 
   useEffect(() => {
     if (playerNumber === currentTurn && bothPlayersJoined) {
@@ -160,20 +165,18 @@ function GameLogic() {
     socket.emit("setScore", number);
     toast.error(`Game Over! Player ${number}, ${role} won!`);
 
-    socket.on("gameState", (state) => {
-      setGameState(state);
-      setWinner([number, role]);
-    });
+    setWinner({ number, role });
+    setIsGameOver(true);
   };
 
-  useEffect(() => {
-    if (winner && gameState) {
-      const number = winner[0];
-      const role = winner[1];
-      navigate("/gameover", { state: { number, role, gameState } });
-      setWinner(null);
-    }
-  }, [winner, gameState]);
+  // useEffect(() => {
+  //   if (winner && gameState) {
+  //     const number = winner[0];
+  //     const role = winner[1];
+  //     navigate("/gameover", { state: { number, role, gameState } });
+  //     setWinner(null);
+  //   }
+  // }, [winner, gameState]);
 
   const handleGameCode = (code) => {
     setGameCode(code);
@@ -203,6 +206,7 @@ function GameLogic() {
     setTurnTimeOut(null);
     setKeyPressDone(false);
     setWinner(null);
+    setIsGameOver(false);
   };
 
   useEffect(() => {
@@ -380,14 +384,21 @@ function GameLogic() {
     );
   };
 
-  const handleCountdownComplete = () => {
-    if (!keyPressDone && playerNumber === currentTurn) {
-      toast.error("TIME OUT!");
-      socket.emit("timeout", playerNumber);
-    }
+  const continueGame = () => {
+    console.log("Continue game");
+    socket.emit("continueGame", gameState); // Emit the current game state to continue
+    setIsGameOver(false);
+    setWinner(null);
+    setKeyPressDone(false);
+    // Ensure both players are marked as joined
+    setBothPlayersJoined(true);
   };
-
-  const renderer = ({ seconds }) => <span>{seconds}</span>;
+  // Handler to restart the game
+  const restartGame = () => {
+    socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
+    reset();
+    navigate("/game"); // Go back to the main game page with fresh start
+  };
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
@@ -433,34 +444,41 @@ function GameLogic() {
           </button>
         </div>
       ) : (
-        <div className="text-center">
-          {/* Navbar */}
-          <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
-
-          {/* Main Row Content */}
-          <Row className="p-4">
-            <Col xs={12} md={6} className="p-3">
-              <div className="responsive-padding">
-                {gameState && gameState.map && (
-                  <Grid map={gameState.map} getCellContent={getCellContent} />
-                )}
-              </div>
-            </Col>
-            <Col
-              className="p-3"
-              xs={12}
-              md={6}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
-              }}
-            >
-              <PlayerInfo playerNumber={playerNumber} playerRole={playerRole} />
-            </Col>
-          </Row>
-        </div>
+        <>
+          {isGameOver ? (
+            <GameOverPage
+              number={winner.number}
+              role={winner.role}
+              gameState={gameState}
+              continueGame={continueGame}
+              restartGame={restartGame}
+            />
+          ) : (
+            <div className="text-center">
+              <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
+              <Row>
+                <Col>
+                  {gameState && gameState.map && (
+                    <Grid map={gameState.map} getCellContent={getCellContent} />
+                  )}
+                </Col>
+                <Col
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "column",
+                  }}
+                >
+                  <PlayerInfo
+                    playerNumber={playerNumber}
+                    playerRole={playerRole}
+                  />
+                </Col>
+              </Row>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
