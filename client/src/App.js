@@ -3,16 +3,29 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Game from "./GameLogic";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// import Game from "./StartPage";
+import StartPage from "./StartPage";
 
 function App() {
   return (
     <>
-      <ToastContainer />
-      <Routes>
-        <Route path="/" element={<Game />} />
-      </Routes>
+      <Router>
+        <Routes>
+          <Route path="/" element={<StartPage />} />
+          <Route path="/game" element={<Game />} />
+        </Routes>
+      </Router>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </>
   );
 }

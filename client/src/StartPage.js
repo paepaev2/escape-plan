@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
 import HomepageLayout from "./components/HomepageLayout";
+import { ToastContainer } from "react-toastify";
 
 const StartPage = () => {
   const [nickname, setNickname] = useState("");
@@ -35,6 +36,7 @@ const StartPage = () => {
 
   return (
     <div>
+      <ToastContainer />
       <HomepageLayout>
         <Col md={2}>
           <form onSubmit={handleSubmit}>
