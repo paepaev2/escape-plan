@@ -121,14 +121,15 @@ function GameLogic() {
     setGameState({ ...state, map });
     setCurrentTurn(state.turn);
 
-    if (state.turnStartTime) {
-      setTurnTimeOut(state.turnStartTime + 10000);
+    if (state.timeRemaining) {
+      setTurnTimeOut(Date.now() + state.timeRemaining);
       setKeyPressDone(false);
     }
   };
 
   const handleGameOver = (data) => {
     const { winner } = data;
+    const { win_type } = data;
 
     let number;
     let role;
@@ -149,7 +150,7 @@ function GameLogic() {
     }
 
     socket.emit("setScore", number);
-    alert(`Game Over! Player ${number}, ${role} won!`);
+    alert(`Game Over! Player ${number}, ${role} won! ${win_type}`);
 
     setWinner({ number, role });
     setIsGameOver(true);

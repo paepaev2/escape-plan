@@ -50,7 +50,7 @@ io.on("connection", (client) => {
       winner = lostNum === 1 ? 1.2 : 1.1;
     }
 
-    io.sockets.in(roomName).emit("gameOver", { winner });
+    io.sockets.in(roomName).emit("gameOver", { winner, win_type: "timeout" });
   }
 
   function handleSetScore(lostNum) {
@@ -133,7 +133,7 @@ io.on("connection", (client) => {
     newGameState.scores = gameState.scores; // Keep the same scores
     state[roomName] = newGameState;
     state[roomName].turnStartTime = Date.now();
-
+    state[roomName].timeRemaining = 10000; // Reset timeRemaining
     io.sockets.in(roomName).emit("gameState", state[roomName]);
     startGameInterval(roomName);
   }
@@ -149,7 +149,26 @@ function startGameInterval(roomName) {
       io.sockets.in(roomName).emit("gameOver", { winner });
       clearInterval(intervalId);
     } else {
-      io.sockets.in(roomName).emit("gameState", state[roomName]);
+      const timeElapsed = Date.now() - state[roomName].turnStartTime;
+      const timeRemaining = 10000 - timeElapsed;
+      if (timeRemaining <= 0) {
+        // Current player has timed out
+        const lostNum = state[roomName].turn; // Current player's number
+        let winner;
+        if (state[roomName].players[lostNum - 1].role === "prisoner") {
+          winner = lostNum === 1 ? 2.2 : 2.1;
+        } else {
+          winner = lostNum === 1 ? 1.2 : 1.1;
+        }
+        io.sockets
+          .in(roomName)
+          .emit("gameOver", { winner, win_type: "timeout" });
+        clearInterval(intervalId);
+      } else {
+        // Update timeRemaining in state
+        state[roomName].timeRemaining = timeRemaining;
+        io.sockets.in(roomName).emit("gameState", state[roomName]);
+      }
     }
   }, 1000 / 60);
 }
