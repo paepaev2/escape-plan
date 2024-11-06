@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Countdown from 'react-countdown';
 import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 
 const socket = io('http://localhost:5000');
 
@@ -22,6 +23,7 @@ function App() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
+  const [winner, setWinner] = useState(null);
 
   useEffect(() => {
     socket.on('gameState', handleGameState);
@@ -90,16 +92,12 @@ function App() {
     socket.on('tooManyPlayers', handleTooManyPlayers);
   };
 
-  //log
-  // useEffect(() => {
-  //   console.log(isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn);
-  // }, [isGameStarted, bothPlayersJoined, gameState, playerNumber, currentTurn]);
-  
-
   const handleGameState = (state) => {
     setGameState(state);
     setCurrentTurn(state.turn);
   };
+
+  const navigate = useNavigate();
 
   const handleGameOver = (data) => {
     const { winner } = data;
@@ -123,10 +121,26 @@ function App() {
     }
 
     socket.emit('setScore', number);
-    alert(`Game Over! Player ${number}, ${role} wins!`);
-    setIsGameStarted(false);
-    setBothPlayersJoined(false); 
+    alert(`Game Over! Player ${number}, ${role} won!`);
+    // setIsGameStarted(false);
+    // setBothPlayersJoined(false); 
+
+    socket.on('gameState', (state) => {
+      setGameState(state);
+      setWinner([number, role]);
+    });
   };
+
+  useEffect(() => {
+    if (winner && gameState) {
+      // console.log('Updated gameState after gameOver:', gameState);
+      // console.log('round winner: ', winner);
+
+      const number = winner[0];
+      const role = winner[1];
+      navigate("/gameover", { state: { number, role, gameState } });
+    }
+  }, [winner, gameState]);
 
   const handleGameCode = (code) => {
     setGameCode(code);

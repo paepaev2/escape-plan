@@ -53,10 +53,12 @@ io.on('connection', (client) => {
   function handleSetScore(lostNum) {
     if (!scoreUpdated) {
       const roomName = clientRooms[client.id];
-      // console.log(state);
-      // console.log(state[roomName], 'updated to');
       state[roomName].scores[lostNum-1] += 1;
-      console.log(state[roomName]); 
+
+      const finalGameState = state[roomName];
+      console.log(finalGameState); 
+      io.sockets.in(roomName).emit('gameState', finalGameState);
+      // io.sockets.in(roomName).emit('result', finalGameState);
     }
 
     scoreUpdated = true;
@@ -135,7 +137,7 @@ function startGameInterval(roomName) {
 
     if (winner) {
       io.sockets.in(roomName).emit('gameOver', { winner });
-      // clearInterval(intervalId);
+      clearInterval(intervalId);
       // delete state[roomName];
     } else {
       io.sockets.in(roomName).emit('gameState', state[roomName]);
