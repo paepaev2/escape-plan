@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
 import HomepageLayout from "./components/HomepageLayout";
-import CustomToastContainer from "./CustomToastContainer";
+import CustomToastContainer from "./components/CustomToastContainer";
 
 const StartPage = () => {
   const [nickname, setNickname] = useState("");

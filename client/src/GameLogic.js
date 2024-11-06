@@ -9,7 +9,7 @@ import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
 import { toast } from "react-toastify";
-import CustomToastContainer from "./CustomToastContainer";
+import CustomToastContainer from "./components/CustomToastContainer";
 
 const socket = io("http://localhost:8000");
 
