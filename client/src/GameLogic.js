@@ -14,11 +14,7 @@ import { socket } from "./socket";
 import GameOverPage from "./GameOverPage";
 
 function GameLogic() {
-  const BG_COLOUR = "#231f20";
-  const PRISONER_COLOUR = "#d96464"; //red
-  const WARDER_COLOUR = "#646dd9"; //blue
-  const TUNNEL_COLOUR = "#64d987"; //green
-  const OBSTACLE_COLOUR = "#d9cd64"; //yellow
+  const navigate = useNavigate();
 
   const [gameCode, setGameCode] = useState("");
   const [isGameStarted, setIsGameStarted] = useState(false);
@@ -30,7 +26,6 @@ function GameLogic() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [nickname, setNickname] = useState("");
 
-  const canvasRef = useRef(null);
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
@@ -65,13 +60,6 @@ function GameLogic() {
       setNickname(savedNickname);
     }
   }, []);
-
-  useEffect(() => {
-    if (playerNumber === currentTurn && bothPlayersJoined) {
-      setTurnTimeOut(Date.now() + 10000);
-      setKeyPressDone(false);
-    }
-  }, [currentTurn, playerNumber, bothPlayersJoined]); // Run when currentTurn or playerNumber changes
 
   useEffect(() => {
     if (gameState && playerNumber !== null) {
@@ -137,6 +125,11 @@ function GameLogic() {
     const map = generateMap(state);
     setGameState({ ...state, map });
     setCurrentTurn(state.turn);
+
+    if (state.turnStartTime) {
+      setTurnTimeOut(state.turnStartTime + 10000);
+      setKeyPressDone(false);
+    }
   };
 
   const navigate = useNavigate();
@@ -169,15 +162,6 @@ function GameLogic() {
     setIsGameOver(true);
   };
 
-  // useEffect(() => {
-  //   if (winner && gameState) {
-  //     const number = winner[0];
-  //     const role = winner[1];
-  //     navigate("/gameover", { state: { number, role, gameState } });
-  //     setWinner(null);
-  //   }
-  // }, [winner, gameState]);
-
   const handleGameCode = (code) => {
     setGameCode(code);
   };
@@ -209,86 +193,86 @@ function GameLogic() {
     setIsGameOver(false);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      console.log("Key pressed:", event.keyCode);
-      const arrowKeys = [37, 38, 39, 40]; // Left, Up, Right, Down arrow keys
+  const handleKeyDown = (event) => {
+    console.log("Key pressed:", event.keyCode);
+    const arrowKeys = [37, 38, 39, 40]; // Left, Up, Right, Down arrow keys
 
-      // Check if the game is started and it's the current player's turn
-      if (isGameStarted && playerNumber === currentTurn) {
-        console.log("Player number:", playerNumber);
-        let newGameState = { ...gameState };
-        console.log("Game state players:", newGameState.players);
+    // Check if the game is started and it's the current player's turn
+    if (isGameStarted && playerNumber === currentTurn) {
+      console.log("Player number:", playerNumber);
+      let newGameState = { ...gameState };
+      console.log("Game state players:", newGameState.players);
 
-        // Use playerNumber - 1 as the index to find the player
-        const player = newGameState.players[playerNumber - 1];
-        console.log("Player:", player);
+      // Use playerNumber - 1 as the index to find the player
+      const player = newGameState.players[playerNumber - 1];
+      console.log("Player:", player);
 
-        socket.emit("keydown", event.keyCode);
-        setKeyPressDone(true);
+      socket.emit("keydown", event.keyCode);
+      setKeyPressDone(true);
 
-        let validMove = false;
+      let validMove = false;
 
-        if (player) {
-          // Handle movement based on the key pressed
-          switch (event.keyCode) {
-            case 38: // Up arrow
-              if (
-                player.y > 0 &&
-                newGameState.map[player.y - 1][player.x] !== 1 // Check if the target cell is not an obstacle
-              ) {
-                player.y -= 1; // Update player's y position
-                validMove = true;
-              }
-              break;
-            case 40: // Down arrow
-              if (
-                player.y < newGameState.map.length - 1 &&
-                newGameState.map[player.y + 1][player.x] !== 1
-              ) {
-                player.y += 1; // Update player's y position
-                validMove = true;
-              }
-              break;
-            case 37: // Left arrow
-              if (
-                player.x > 0 &&
-                newGameState.map[player.y][player.x - 1] !== 1
-              ) {
-                player.x -= 1; // Update player's x position
-                validMove = true;
-              }
-              break;
-            case 39: // Right arrow
-              if (
-                player.x < newGameState.map[0].length - 1 &&
-                newGameState.map[player.y][player.x + 1] !== 1
-              ) {
-                player.x += 1; // Update player's x position
-                validMove = true;
-              }
-              break;
-            default:
-              break;
-          }
-
-          if (validMove) {
-            // Regenerate the map with the updated player positions
-            const map = generateMap(newGameState);
-            setGameState({ ...newGameState, map }); // Update the game state
-            socket.emit("move", newGameState); // Emit the updated game state to the server
-            setKeyPressDone(true);
-            setTurnTimeOut(null);
-
-            // Switch turns
-            setCurrentTurn((prevTurn) => (prevTurn === 1 ? 2 : 1));
-          }
+      if (player) {
+        // Handle movement based on the key pressed
+        switch (event.keyCode) {
+          case 38: // Up arrow
+            if (
+              player.y > 0 &&
+              newGameState.map[player.y - 1][player.x] !== 1 // Check if the target cell is not an obstacle
+            ) {
+              player.y -= 1; // Update player's y position
+              validMove = true;
+            }
+            break;
+          case 40: // Down arrow
+            if (
+              player.y < newGameState.map.length - 1 &&
+              newGameState.map[player.y + 1][player.x] !== 1
+            ) {
+              player.y += 1; // Update player's y position
+              validMove = true;
+            }
+            break;
+          case 37: // Left arrow
+            if (
+              player.x > 0 &&
+              newGameState.map[player.y][player.x - 1] !== 1
+            ) {
+              player.x -= 1; // Update player's x position
+              validMove = true;
+            }
+            break;
+          case 39: // Right arrow
+            if (
+              player.x < newGameState.map[0].length - 1 &&
+              newGameState.map[player.y][player.x + 1] !== 1
+            ) {
+              player.x += 1; // Update player's x position
+              validMove = true;
+            }
+            break;
+          default:
+            break;
         }
-      } else if (arrowKeys.includes(event.keyCode)) {
-        toast.error("It's not your turn!, please wait for another player");
-      }
-    };
 
+        if (validMove) {
+          // Regenerate the map with the updated player positions
+          const map = generateMap(newGameState);
+          setGameState({ ...newGameState, map }); // Update the game state
+          socket.emit("move", newGameState); // Emit the updated game state to the server
+          setKeyPressDone(true);
+          setTurnTimeOut(null);
+
+          // Switch turns
+          setCurrentTurn((prevTurn) => (prevTurn === 1 ? 2 : 1));
+        }
+      }
+    } else if (arrowKeys.includes(event.keyCode)) {
+      toast.error("It's not your turn!, please wait for another player");
+    }
+  };
+
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -296,13 +280,21 @@ function GameLogic() {
     };
   }, [isGameStarted, playerRole, gameState, currentTurn, playerNumber]);
 
+  // Function to handle turn timeout
+  const handleTurnTimeout = () => {
+    if (playerNumber === currentTurn && !keyPressDone) {
+      // It's this player's turn and they haven't made a move
+      socket.emit("timeout", playerNumber);
+    }
+  };
+
   // Function to get the cell content based on the cell type
   const getCellContent = (cell) => {
     const wardenImage = "/images/warden.png";
     const prisonerImage = "/images/prisoner.png";
     const baseTileImage = "/images/base-tile.png";
     const obstacleTileImage = "/images/obstacle-tile.png";
-    const tunnelImage = "/images/tunnel-tile.png"; // Ensure this image exists
+    const tunnelImage = "/images/tunnel-tile.png";
 
     const imageStyle = {
       width: "100%",
@@ -393,6 +385,7 @@ function GameLogic() {
     // Ensure both players are marked as joined
     setBothPlayersJoined(true);
   };
+
   // Handler to restart the game
   const restartGame = () => {
     socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
@@ -455,7 +448,11 @@ function GameLogic() {
             />
           ) : (
             <div className="text-center">
-              <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
+              <GameNavbar
+                gameCode={gameCode}
+                turnTimeOut={turnTimeOut}
+                handleTurnTimeout={handleTurnTimeout} // Pass the handler to GameNavbar
+              />
               <Row>
                 <Col>
                   {gameState && gameState.map && (

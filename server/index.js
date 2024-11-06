@@ -42,6 +42,8 @@ io.on("connection", (client) => {
   function handleTimeout(lostNum) {
     let winner;
     const roomName = clientRooms[client.id];
+    if (!roomName) return;
+
     if (state[roomName].players[lostNum - 1].role === "prisoner") {
       winner = lostNum === 1 ? 2.2 : 2.1;
     } else {
@@ -75,8 +77,6 @@ io.on("connection", (client) => {
     client.emit("gameCode", roomName);
     client.emit("gameState", state[roomName]);
     client.emit("init", 1);
-
-    const room = io.sockets.adapter.rooms.get(roomName);
   }
 
   function handleJoinGame(roomName) {
@@ -112,6 +112,7 @@ io.on("connection", (client) => {
           player.y += move.y;
           if (turn === 1) state[roomName].turn = 2;
           else state[roomName].turn = 1;
+          state[roomName].turnStartTime = Date.now();
 
           client.to(roomName).emit("turnCompleted");
         } else {
@@ -131,6 +132,7 @@ io.on("connection", (client) => {
     const newGameState = initGame();
     newGameState.scores = gameState.scores; // Keep the same scores
     state[roomName] = newGameState;
+    state[roomName].turnStartTime = Date.now();
 
     io.sockets.in(roomName).emit("gameState", state[roomName]);
     startGameInterval(roomName);
@@ -138,6 +140,7 @@ io.on("connection", (client) => {
 });
 
 function startGameInterval(roomName) {
+  state[roomName].turnStartTime = Date.now();
   scoreUpdated = false;
   const intervalId = setInterval(() => {
     const winner = gameLoop(state[roomName]);

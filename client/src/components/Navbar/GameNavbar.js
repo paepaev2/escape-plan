@@ -7,7 +7,7 @@ import SettingsMenu from "./SettingsMenu";
 import CustomButton from "../Button";
 import Countdown from "react-countdown";
 
-function GameNavbar({ gameCode, turnTimeOut }) {
+function GameNavbar({ gameCode, turnTimeOut, handleTurnTimeout }) {
   const renderer = ({ seconds }) => <span>{seconds}</span>;
 
   return (
@@ -16,7 +16,13 @@ function GameNavbar({ gameCode, turnTimeOut }) {
         {/* Timer */}
         <CustomButton>
           <img src={timer} style={iconButtonStyle} />
-          {turnTimeOut && <Countdown date={turnTimeOut} renderer={renderer} />}
+          {turnTimeOut && (
+            <Countdown
+              date={turnTimeOut}
+              renderer={renderer}
+              onComplete={handleTurnTimeout}
+            />
+          )}
         </CustomButton>
 
         {/* Game Code */}
