@@ -374,7 +374,7 @@ function GameLogic() {
         </div>
       ) : (
         <div className="text-center">
-        {/* <RandomBackgroundComponent> */}
+          <RandomBackgroundComponent>
             <div style={{ position: "relative", zIndex: 1 }}>
               <GameNavbar gameCode={gameCode} />
               <h2>
@@ -391,7 +391,7 @@ function GameLogic() {
             />
           )} */}
             </div>
-          {/* </RandomBackgroundComponent> */}
+          </RandomBackgroundComponent>
         </div>
       )}
     </div>

@@ -44,9 +44,8 @@ function GameNavbar({ gameCode }) {
 
 // Custom styles
 const navbarStyle = {
-  backgroundColor: "#2a2a2a",
   color: "#ffffff",
-  padding: "10px 0",
+  padding: "24px 0",
 };
 
 const gameCodeStyle = {
