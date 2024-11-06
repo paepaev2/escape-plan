@@ -126,8 +126,8 @@ function GameLogic() {
     setGameState({ ...state, map });
     setCurrentTurn(state.turn);
 
-    if (state.turnStartTime) {
-      setTurnTimeOut(state.turnStartTime + 10000);
+    if (state.timeRemaining) {
+      setTurnTimeOut(Date.now() + state.timeRemaining);
       setKeyPressDone(false);
     }
   };
@@ -136,6 +136,7 @@ function GameLogic() {
 
   const handleGameOver = (data) => {
     const { winner } = data;
+    const { win_type } = data;
 
     let number;
     let role;
