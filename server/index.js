@@ -42,7 +42,7 @@ io.on("connection", (client) => {
   function handleTimeout(lostNum) {
     let winner;
     const roomName = clientRooms[client.id];
-    if (state[roomName].state.players[lostNum-1].role === 'prisoner') {
+    if (state[roomName].players[lostNum-1].role === 'prisoner') {
       winner = lostNum === 1 ? 2.2 : 2.1;
     } else {
       winner = lostNum === 1 ? 1.2 : 1.1;
