@@ -1,9 +1,9 @@
 import React from "react";
-import { socket } from "./socket";
-import HomepageLayout from "./components/Layout/HomepageLayout";
+import { socket } from "../socket";
+import HomepageLayout from "../components/Layout/HomepageLayout";
 import { Col, Row } from "react-bootstrap";
-import LobbyLayout from "./components/Layout/LobbyLayout";
-import GameOver from "./assets/game/gameover.png";
+import LobbyLayout from "../components/Layout/LobbyLayout";
+import GameOver from "../assets/game/gameover.png";
 
 function GameOverPage({ number, role, gameState, continueGame, restartGame }) {
   const score1 = gameState?.scores[0];

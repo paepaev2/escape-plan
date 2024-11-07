@@ -1,6 +1,6 @@
 import React from "react";
-import Loading from "./assets/game/loading.gif";
-import LobbyLayout from "./components/Layout/LobbyLayout";
+import Loading from "../assets/game/loading.gif";
+import LobbyLayout from "../components/Layout/LobbyLayout";
 
 function WaitingScreen() {
 
