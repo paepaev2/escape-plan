@@ -83,6 +83,7 @@ io.on("connection", (client) => {
   client.on("timeout", handleTimeout);
   client.on("setScore", handleSetScore);
   client.on("continueGame", handleContinueGame);
+  client.on("restartGame", handleRestartGame);
   client.on("nickname", handleNickname);
 
   // Admin event handler
@@ -90,6 +91,12 @@ io.on("connection", (client) => {
     console.log("Resetting game and scores");
     io.emit("gameReset"); // Broadcast a reset event to all clients
   });
+
+  function handleRestartGame() {
+    const roomName = clientRooms[client.id];
+    io.sockets.in(roomName).emit("gameReset");
+    delete clientRooms[roomName];
+  }
 
   function handleNickname(name, number) {
     const roomName = clientRooms[client.id];

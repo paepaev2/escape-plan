@@ -46,6 +46,7 @@ function GameLogic() {
     socket.on("gameReset", () => {
       // Reset the game state
       reset();
+      navigate("/game");
     });
 
     // Clean up event listeners on unmount
@@ -424,9 +425,10 @@ function GameLogic() {
 
   // Handler to restart the game
   const restartGame = () => {
-    socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
-    reset();
-    navigate("/game"); // Go back to the main game page with fresh start
+    // socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
+    socket.emit("restartGame");
+    // reset();
+    // navigate("/game"); // Go back to the main game page with fresh start
   };
 
   return (
