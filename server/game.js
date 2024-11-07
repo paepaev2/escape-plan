@@ -26,7 +26,7 @@ function initGame() {
     "/images/warder1.png",
     "/images/warder2.png",
   ];
-  const randomWarderIndex = Math.floor(Math.random() * prisonerImages.length);
+  const randomWarderIndex = Math.floor(Math.random() * warderImages.length);
   state.warderImagePath = warderImages[randomWarderIndex];
 
   const tileSets = [
