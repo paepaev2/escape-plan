@@ -124,7 +124,7 @@ io.on("connection", (client) => {
     }
   }
 
-  function handleContinueGame(gameState) {
+  function handleContinueGame(gameState, winner) {
     const roomName = clientRooms[client.id];
     if (!roomName) return;
 
@@ -132,6 +132,7 @@ io.on("connection", (client) => {
     const newGameState = initGame();
     newGameState.scores = gameState.scores; // Keep the same scores
     state[roomName] = newGameState;
+    state[roomName].turn = winner;
     state[roomName].turnStartTime = Date.now();
     state[roomName].timeRemaining = 10000; // Reset timeRemaining
     io.sockets.in(roomName).emit("gameState", state[roomName]);
