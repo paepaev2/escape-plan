@@ -3,7 +3,14 @@ import { Row, Col, Card } from "react-bootstrap";
 import Rules from "../../assets/game/rules.png";
 import Star from "../../assets/game/star.png";
 
-function PlayerInfo({ playerNumber, playerRole, nickname, turn }) {
+function PlayerInfo({
+  playerNumber,
+  playerRole,
+  nickname,
+  turn,
+  warderImage,
+  prisonerImage,
+}) {
   return (
     <Row
       className="justify-content-center"
@@ -11,18 +18,15 @@ function PlayerInfo({ playerNumber, playerRole, nickname, turn }) {
     >
       <Col md={10}>
         {/* Player Role Display */}
-        { turn === playerNumber ?
-        <h2>It's your turn !</h2>
-        : <h2>Please wait ...</h2>
-        }
+        {turn === playerNumber ? (
+          <h2>It's your turn !</h2>
+        ) : (
+          <h2>Please wait ...</h2>
+        )}
         <h3>
           You are {nickname}, {playerRole}
           <img
-            src={
-              playerRole === "warder"
-                ? "/images/warden.png"
-                : "/images/prisoner.png"
-            }
+            src={playerRole === "warder" ? warderImage : prisonerImage}
             style={{ width: "40px", marginLeft: "10px" }}
             alt={playerRole}
           />

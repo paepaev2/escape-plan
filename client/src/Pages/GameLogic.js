@@ -25,6 +25,16 @@ function GameLogic() {
   const [winner, setWinner] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
   const [nickname, setNickname] = useState([]);
+  const [warderImagePath, setWarderImagePath] = useState("/images/warden.png");
+  const [prisonerImagePath, setPrisonerImagePath] = useState(
+    "/images/prisoner.png"
+  );
+  const [baseTileImagePath, setBaseTileImagePath] = useState(
+    "/images/base-tile.png"
+  );
+  const [obstacleTileImagePath, setObstacleTileImagePath] = useState(
+    "/images/obstacle-tile.png"
+  );
 
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
@@ -158,9 +168,24 @@ function GameLogic() {
     setWinner(null);
     setKeyPressDone(false);
     // -edit
-    
+
     // Ensure both players are marked as joined
     setBothPlayersJoined(true);
+
+    if (state.warderImagePath) {
+      setWarderImagePath(state.warderImagePath);
+    }
+
+    if (state.prisonerImagePath) {
+      setPrisonerImagePath(state.prisonerImagePath);
+    }
+
+    if (state.baseTileImagePath) {
+      setBaseTileImagePath(state.baseTileImagePath);
+    }
+    if (state.obstacleTileImagePath) {
+      setObstacleTileImagePath(state.obstacleTileImagePath);
+    }
 
     if (state.timeRemaining) {
       setTurnTimeOut(Date.now() + state.timeRemaining);
@@ -336,10 +361,6 @@ function GameLogic() {
 
   // Function to get the cell content based on the cell type
   const getCellContent = (cell) => {
-    const wardenImage = "/images/warden.png";
-    const prisonerImage = "/images/prisoner.png";
-    const baseTileImage = "/images/base-tile.png";
-    const obstacleTileImage = "/images/obstacle-tile.png";
     const tunnelImage = "/images/tunnel-tile.png";
 
     const imageStyle = {
@@ -359,29 +380,37 @@ function GameLogic() {
 
     switch (cell) {
       case 0:
-        return <img src={baseTileImage} alt="base-tile" style={imageStyle} />;
+        return (
+          <img src={baseTileImagePath} alt="base-tile" style={imageStyle} />
+        );
       case 1:
         return (
-          <img src={obstacleTileImage} alt="Obstacle" style={imageStyle} />
+          <img src={obstacleTileImagePath} alt="Obstacle" style={imageStyle} />
         );
       case "w":
         return (
           <>
-            <img src={baseTileImage} alt="base-tile" style={imageStyle} />
-            <img src={wardenImage} alt="Warden" style={characterStyle} />
+            <img src={baseTileImagePath} alt="base-tile" style={imageStyle} />
+            <img src={warderImagePath} alt="Warder" style={characterStyle} />
           </>
         );
       case "p":
         return (
           <>
-            <img src={baseTileImage} alt="base-tile" style={imageStyle} />
-            <img src={prisonerImage} alt="Prisoner" style={characterStyle} />
+            <img src={baseTileImagePath} alt="base-tile" style={imageStyle} />
+            <img
+              src={prisonerImagePath}
+              alt="Prisoner"
+              style={characterStyle}
+            />
           </>
         );
       case "h":
         return <img src={tunnelImage} alt="Tunnel" style={imageStyle} />;
       default:
-        return <img src={baseTileImage} alt="base-tile" style={imageStyle} />;
+        return (
+          <img src={baseTileImagePath} alt="base-tile" style={imageStyle} />
+        );
     }
   };
 
@@ -525,6 +554,8 @@ function GameLogic() {
                     playerRole={playerRole}
                     nickname={nickname}
                     turn={currentTurn}
+                    warderImage={warderImagePath}
+                    prisonerImage={prisonerImagePath}
                   />
                 </Col>
               </Row>

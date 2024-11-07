@@ -12,6 +12,35 @@ module.exports = {
 function initGame() {
   const state = createGameState();
   randomPos(state);
+  const prisonerImages = [
+    "/images/prisoner.png",
+    "/images/prisoner1.png",
+    "/images/prisoner2.png",
+    "/images/prisoner3.png",
+    "/images/prisoner4.png",
+  ];
+  const randomPrisonerIndex = Math.floor(Math.random() * prisonerImages.length);
+  state.prisonerImagePath = prisonerImages[randomPrisonerIndex];
+  const warderImages = [
+    "/images/warder.png",
+    "/images/warder1.png",
+    "/images/warder2.png",
+  ];
+  const randomWarderIndex = Math.floor(Math.random() * prisonerImages.length);
+  state.warderImagePath = warderImages[randomWarderIndex];
+
+  const tileSets = [
+    { base: "/images/base-tile.png", obstacle: "/images/obstacle-tile.png" },
+    { base: "/images/base-tile1.png", obstacle: "/images/obstacle-tile1.png" },
+    { base: "/images/base-tile2.png", obstacle: "/images/obstacle-tile2.png" },
+    { base: "/images/base-tile3.png", obstacle: "/images/obstacle-tile3.png" },
+  ];
+
+  const randomTileSetIndex = Math.floor(Math.random() * tileSets.length);
+  const selectedTileSet = tileSets[randomTileSetIndex];
+
+  state.baseTileImagePath = selectedTileSet.base;
+  state.obstacleTileImagePath = selectedTileSet.obstacle;
   return state;
 }
 
