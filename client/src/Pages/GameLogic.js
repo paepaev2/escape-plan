@@ -5,7 +5,7 @@ import GameNavbar from "../components/Navbar/GameNavbar";
 import RandomBackgroundComponent from "../components/Layout/GameBackgrounds";
 import EscapePlanLogo from "../assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
-import PlayerInfo from "../components/PlayerInfo";
+import PlayerInfo from "../components/Cards/PlayerInfo";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
 import { toast } from "react-toastify";

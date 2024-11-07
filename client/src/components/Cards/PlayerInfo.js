@@ -1,7 +1,7 @@
 import React from "react";
 import { Row, Col, Card } from "react-bootstrap";
-import Rules from "../assets/game/rules.png";
-import Star from "../assets/game/star.png";
+import Rules from "../../assets/game/rules.png";
+import Star from "../../assets/game/star.png";
 
 function PlayerInfo({ playerNumber, playerRole, nickname }) {
   return (

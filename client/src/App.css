@@ -38,14 +38,14 @@
 } */
 
 .responsive-padding {
-  padding: 20px; /* Default padding for small screens */
+  padding: 40px; /* Default padding for small screens */
 
   @media (min-width: 768px) {
-      padding: 0px; /* Medium screens */
+      padding: 40px; /* Medium screens */
   }
 
   @media (min-width: 1200px) {
-      padding: 60px; /* Large screens */
+      padding: 80px; /* Large screens */
   }
 }
 
