@@ -154,7 +154,6 @@ function GameLogic() {
 
     socket.emit("setScore", number);
     toast.error(`Game Over! Player ${number}, ${role} won!`);
-
     setWinner({ number, role });
     setIsGameOver(true);
   };
@@ -414,11 +413,9 @@ function GameLogic() {
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
-
           <div>
             <span style={{ color: "#ffffff" }}>OR</span>
           </div>
-
           <input
             type="text"
             placeholder="Enter Game Code"
