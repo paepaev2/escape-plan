@@ -56,7 +56,6 @@ app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
-
 // Client tracking
 let clients = {}; // key: socket id, value: client type ('game' or 'admin')
 
@@ -78,7 +77,6 @@ function updateAdminClientCount() {
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
-
   client.on("registerClient", (data) => {
     const clientType = data.type;
     clients[client.id] = clientType;
@@ -205,6 +203,15 @@ io.on("connection", (client) => {
         if (validMove(state[roomName], client.number, move)) {
           player.x += move.x;
           player.y += move.y;
+
+          // Check for win condition immediately after updating position
+          const winner = gameLoop(state[roomName]);
+          if (winner) {
+            console.log("Game over! Winner:", winner);
+            io.sockets.in(roomName).emit("gameOver", { winner });
+            return; // Exit the function to prevent further execution
+          }
+
           state[roomName].turn = turn === 1 ? 2 : 1;
           state[roomName].turnStartTime = Date.now();
           client.to(roomName).emit("turnCompleted");
@@ -242,6 +249,7 @@ function startGameInterval(roomName) {
     const winner = gameLoop(state[roomName]);
 
     if (winner) {
+      console.log("Game over! Winner:", winner);
       io.sockets.in(roomName).emit("gameOver", { winner });
       clearInterval(intervalId);
     } else {
