@@ -29,6 +29,7 @@ const StartPage = () => {
       return;
     }
 
+    localStorage.setItem("nickname", nickname);
     navigate("/game", { state: { nickname } });
   };
 

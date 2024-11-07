@@ -11,12 +11,10 @@ function App() {
   return (
     <>
       <ToastContainer />
-      <Router>
-        <Routes>
-          <Route path="/" element={<Game />} />
-          <Route path="/wait" element={<WaitingScreen />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/" element={<Game />} />
+        <Route path="/wait" element={<WaitingScreen />} />
+      </Routes>
     </>
   );
 }

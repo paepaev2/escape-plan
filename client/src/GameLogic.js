@@ -37,7 +37,6 @@ function GameLogic() {
     socket.on("unknownGame", handleUnknownGame);
     socket.on("tooManyPlayers", handleTooManyPlayers);
     socket.on("invalidMove", handleInvalidMove);
-    socket.on("invalidTurn", handleInvalidTurn);
     socket.on("bothPlayersJoined", () => {
       setBothPlayersJoined(true);
     });
@@ -49,7 +48,6 @@ function GameLogic() {
       socket.off("unknownGame", handleUnknownGame);
       socket.off("tooManyPlayers", handleTooManyPlayers);
       socket.off("invalidMove", handleInvalidMove);
-      socket.off("invalidTurn", handleInvalidTurn);
       socket.off("bothPlayersJoined");
     };
   }, []);
@@ -131,8 +129,6 @@ function GameLogic() {
       setKeyPressDone(false);
     }
   };
-
-  const navigate = useNavigate();
 
   const handleGameOver = (data) => {
     const { winner } = data;

@@ -1,14 +1,15 @@
 //index.js
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import 'bootstrap/dist/css/bootstrap.min.css'; // If you're using Bootstrap for styling
-import './App.css'; // Ensure global CSS is imported
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import StartPage from './StartPage';
-import GameOverPage from './GameOverPage'; 
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "bootstrap/dist/css/bootstrap.min.css"; // If you're using Bootstrap for styling
+import "./App.css"; // Ensure global CSS is imported
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import StartPage from "./StartPage";
+import GameOverPage from "./GameOverPage";
+import WaitingScreen from "./LoadingPage";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Router>
@@ -16,6 +17,7 @@ root.render(
         <Route path="/" element={<StartPage />} />
         <Route path="/game" element={<App />} />
         <Route path="/gameover" element={<GameOverPage />} />
+        <Route path="/wait" element={<WaitingScreen />} />
       </Routes>
     </Router>
   </React.StrictMode>
