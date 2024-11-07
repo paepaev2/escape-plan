@@ -13,7 +13,6 @@ function App() {
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Game />} />
-        <Route path="/wait" element={<WaitingScreen />} />
       </Routes>
     </>
   );
