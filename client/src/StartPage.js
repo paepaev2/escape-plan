@@ -16,11 +16,9 @@ const StartPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const enterNickname = () => toast.error("Please enter your nickname!");
-
     if (nickname.trim() === "") {
       console.log("Nickname is empty, showing toast");
-      toast.info("Please enter your nickname!", {
+      toast.error("Please enter your nickname!", {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: false,
