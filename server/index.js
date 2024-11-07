@@ -140,6 +140,8 @@ io.on("connection", (client) => {
 
     // Reset the game state while keeping the scores
     const newGameState = initGame();
+    newGameState.players[0].nickname = gameState.players[0].nickname;
+    newGameState.players[1].nickname = gameState.players[1].nickname;
     newGameState.scores = gameState.scores; // Keep the same scores
     state[roomName] = newGameState;
     state[roomName].turn = winner;
