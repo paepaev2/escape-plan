@@ -219,7 +219,6 @@ function GameLogic() {
             ) {
               player.y -= 1; // Update player's y position
               validMove = true;
-              console.log('up, true, role: ', player.role);
             }
             break;
           case 40: // Down arrow
@@ -230,7 +229,6 @@ function GameLogic() {
             ) {
               player.y += 1; // Update player's y position
               validMove = true;
-              console.log('down, true, role: ', player.role);
             }
             break;
           case 37: // Left arrow
@@ -241,7 +239,6 @@ function GameLogic() {
             ) {
               player.x -= 1; // Update player's x position
               validMove = true;
-              console.log('left, true, role: ', player.role);
             }
             break;
           case 39: // Right arrow
@@ -252,14 +249,11 @@ function GameLogic() {
             ) {
               player.x += 1; // Update player's x position
               validMove = true;
-              console.log('right, true, role: ', player.role);
             }
             break;
           default:
             break;
         }
-
-        console.log('final validMove= ', validMove);
 
         if (validMove) {
           // Regenerate the map with the updated player positions
