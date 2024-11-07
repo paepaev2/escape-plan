@@ -30,23 +30,21 @@ function GameLogic() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
 
-  const socket = io("http://localhost:8000"); // Connect to the server
-
   // Receive the list of online clients from the server
-  socket.on('onlineClients', (clients) => {
-    console.log('Online clients:', clients);
+  socket.on("onlineClients", (clients) => {
+    console.log("Online clients:", clients);
     // Handle the list of online clients (e.g., display them on the UI)
   });
 
   // Listen for client count updates from the server (admin)
-  socket.on('clientCount', (data) => {
+  socket.on("clientCount", (data) => {
     console.log(`Total connected clients: ${data.count}`);
-    console.log('Online clients:', data.clients);
+    console.log("Online clients:", data.clients);
     // Update the UI or other client-side logic with client count
   });
 
   // Listen for game reset events
-  socket.on('gameReset', () => {
+  socket.on("gameReset", () => {
     // console.log('Game and scores have been reset.');
     reset();
   });
@@ -88,6 +86,7 @@ function GameLogic() {
   }, [gameState, playerNumber]);
 
   const createGame = () => {
+    console.log("Create game", socket);
     socket.emit("newGame");
     socket.on("gameCode", (code) => {
       setGameCode(code);
@@ -238,7 +237,9 @@ function GameLogic() {
             if (
               player.y > 0 &&
               newGameState.map[player.y - 1][player.x] !== 1 && // Check if the target cell is not an obstacle
-              (player.role !== 'warder' ? true : newGameState.map[player.y - 1][player.x] !== 'h')
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y - 1][player.x] !== "h")
             ) {
               player.y -= 1; // Update player's y position
               validMove = true;
@@ -248,7 +249,9 @@ function GameLogic() {
             if (
               player.y < newGameState.map.length - 1 &&
               newGameState.map[player.y + 1][player.x] !== 1 &&
-              (player.role !== 'warder' ? true : newGameState.map[player.y + 1][player.x] !== 'h')
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y + 1][player.x] !== "h")
             ) {
               player.y += 1; // Update player's y position
               validMove = true;
@@ -258,7 +261,9 @@ function GameLogic() {
             if (
               player.x > 0 &&
               newGameState.map[player.y][player.x - 1] !== 1 &&
-              (player.role !== 'warder' ? true : newGameState.map[player.y][player.x - 1] !== 'h')
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y][player.x - 1] !== "h")
             ) {
               player.x -= 1; // Update player's x position
               validMove = true;
@@ -268,7 +273,9 @@ function GameLogic() {
             if (
               player.x < newGameState.map[0].length - 1 &&
               newGameState.map[player.y][player.x + 1] !== 1 &&
-              (player.role !== 'warder' ? true : newGameState.map[player.y][player.x + 1] !== 'h')
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y][player.x + 1] !== "h")
             ) {
               player.x += 1; // Update player's x position
               validMove = true;

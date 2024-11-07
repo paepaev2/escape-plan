@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 // Server URL (hardcoded)
-const SERVER_URL = 'http://localhost:3000'; // Change this to your server's IP if needed
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000";
 
 function GameClient() {
   const [clients, setClients] = useState({});
 
   useEffect(() => {
     // Connect to the server
-    const socket = io(SERVER_URL);
+    const socket = io(process.env.SERVER_URL);
 
     // Receive the list of existing clients
-    socket.on('existingClients', (clientList) => {
+    socket.on("existingClients", (clientList) => {
       setClients(clientList);
     });
 
     // Add a new client to the list
-    socket.on('newClient', (newClient) => {
+    socket.on("newClient", (newClient) => {
       setClients((prevClients) => ({
         ...prevClients,
         [newClient.id]: newClient,
@@ -25,7 +25,7 @@ function GameClient() {
     });
 
     // Remove a disconnected client from the list
-    socket.on('clientDisconnected', (disconnectedClient) => {
+    socket.on("clientDisconnected", (disconnectedClient) => {
       setClients((prevClients) => {
         const updatedClients = { ...prevClients };
         delete updatedClients[disconnectedClient.id];

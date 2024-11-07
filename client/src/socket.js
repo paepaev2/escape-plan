@@ -1,4 +1,3 @@
 import { io } from "socket.io-client";
 
-// export const socket = io("http://localhost:8000");
-export const socket = io("http://192.168.56.1:8000"); // Replace with the server's local IP
+export const socket = io(process.env.REACT_APP_SERVER_URL); // Replace with the server's local IP

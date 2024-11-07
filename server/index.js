@@ -4,7 +4,7 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const { gameLoop, validMove, getUpdatedPos, initGame } = require("./game");
 const { makeid } = require("./utils");
-require('dotenv').config();
+require("dotenv").config();
 
 // Set up the Express app and server
 const app = express();
@@ -15,16 +15,16 @@ const server = http.createServer(app);
 
 // Use environment variables for IP and PORT
 const PORT = process.env.SERVER_PORT || 8000;
-// const IP = process.env.SERVER_IP || '0.0.0.0';
+const IP = process.env.SERVER_IP || "0.0.0.0";
 
 // const server = app.listen(PORT, IP, () => {
 //   console.log(`Server is running on ${IP}:${PORT}`);
 // });
 
-app.get('/config', (req, res) => {
+app.get("/config", (req, res) => {
   res.json({
-      serverIp: process.env.SERVER_IP,
-      serverPort: process.env.SERVER_PORT
+    serverIp: process.env.SERVER_IP || "0.0.0.0",
+    serverPort: process.env.SERVER_PORT,
   });
 });
 
@@ -42,8 +42,8 @@ const io = socketIo(server, {
   },
 });
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, IP, () => {
+  console.log(`Server is running on port ${PORT} ${IP}`);
 });
 
 const state = {};
@@ -51,37 +51,35 @@ const clientRooms = {};
 let scoreUpdated = false;
 let connectedClients = 0;
 
-
 // Serve the admin panel page
 const path = require("path");
-app.use(express.static(path.join(__dirname, 'public', 'admin.html')));
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+app.use(express.static(path.join(__dirname, "public", "admin.html")));
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
-
 
 let clients = {};
 function updateAdminClientCount() {
-  io.emit('clientCount', {
-      count: connectedClients,
-      clients: Object.keys(clients)
+  io.emit("clientCount", {
+    count: connectedClients,
+    clients: Object.keys(clients),
   });
 }
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
-  if (client.handshake.headers.origin === "http://localhost:3000") {
+  if (client.handshake.headers.origin === process.env.FRONTEND_ORIGIN) {
     // console.log("A user connected:", client.id);
     connectedClients++;
     clients[client.id] = client; // Store the client's socket ID
-    console.log('Client connected: ', client.id);
+    console.log("Client connected: ", client.id);
     console.log("Connected clients:", connectedClients);
 
     // Emit updated client count and online clients to the admin
     updateAdminClientCount();
 
     // Send the list of online clients to the new client
-    client.emit('onlineClients', Object.keys(clients));
+    client.emit("onlineClients", Object.keys(clients));
   }
 
   client.on("newGame", handleNewGame);
@@ -92,27 +90,26 @@ io.on("connection", (client) => {
   client.on("continueGame", handleContinueGame);
   client.on("nickname", handleNickname);
   client.on("disconnect", () => {
-    if (client.handshake.headers.origin === "http://localhost:3000") {
+    if (client.handshake.headers.origin === process.env.FRONTEND_ORIGIN) {
       // console.log("Client disconnected:", client.id);
       connectedClients--;
       delete clients[client.id]; // Remove the client from the list
-      console.log('Client disconnected: ', client.id);
+      console.log("Client disconnected: ", client.id);
       console.log("Connected clients:", connectedClients);
 
       // Update the client count and list of online clients
       updateAdminClientCount();
-
     }
   });
   client.on("adminResetGame", () => {
     // console.log('Resetting game and scores');
-    io.emit('gameReset'); // Broadcast a reset event to all clients
+    io.emit("gameReset"); // Broadcast a reset event to all clients
   });
 
   function handleNickname(name, number) {
     const roomName = clientRooms[client.id];
     // console.log("state nick: ", state[roomName].players, name, number);
-    state[roomName].players[number-1].nickname = name;
+    state[roomName].players[number - 1].nickname = name;
     // console.log('test nickname= ', state[roomName].players[number-1]);
 
     io.sockets.in(roomName).emit("gameState", state[roomName]);
