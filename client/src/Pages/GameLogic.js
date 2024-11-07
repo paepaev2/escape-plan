@@ -30,24 +30,32 @@ function GameLogic() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
 
-  // Receive the list of online clients from the server
-  socket.on("onlineClients", (clients) => {
-    console.log("Online clients:", clients);
-    // Handle the list of online clients (e.g., display them on the UI)
-  });
+  useEffect(() => {
+    // Event listeners
+    socket.on("onlineClients", (clients) => {
+      console.log("Online clients:", clients);
+      // Handle the list of online clients (e.g., display them on the UI)
+    });
 
-  // Listen for client count updates from the server (admin)
-  socket.on("clientCount", (data) => {
-    console.log(`Total connected clients: ${data.count}`);
-    console.log("Online clients:", data.clients);
-    // Update the UI or other client-side logic with client count
-  });
+    socket.on("clientCount", (data) => {
+      console.log(`Total connected clients: ${data.count}`);
+      console.log("Online clients:", data.clients);
+      // Update the UI or other client-side logic with client count
+    });
 
-  // Listen for game reset events
-  socket.on("gameReset", () => {
-    // console.log('Game and scores have been reset.');
-    reset();
-  });
+    socket.on("gameReset", () => {
+      // Reset the game state
+      reset();
+      navigate("/game");
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      socket.off("onlineClients");
+      socket.off("clientCount");
+      socket.off("gameReset");
+    };
+  }, []);
 
   useEffect(() => {
     socket.on("gameState", handleGameState);
@@ -145,6 +153,14 @@ function GameLogic() {
     const map = generateMap(state);
     setGameState({ ...state, map });
     setCurrentTurn(state.turn);
+    //edit
+    setIsGameOver(false);
+    setWinner(null);
+    setKeyPressDone(false);
+    // -edit
+    
+    // Ensure both players are marked as joined
+    setBothPlayersJoined(true);
 
     if (state.timeRemaining) {
       setTurnTimeOut(Date.now() + state.timeRemaining);
@@ -409,22 +425,23 @@ function GameLogic() {
   const continueGame = () => {
     console.log("Continue game");
     socket.emit("continueGame", gameState, winner.number); // Emit the current game state to continue
-    setIsGameOver(false);
-    setWinner(null);
-    setKeyPressDone(false);
-    // Ensure both players are marked as joined
-    setBothPlayersJoined(true);
+    // setIsGameOver(false);
+    // setWinner(null);
+    // setKeyPressDone(false);
+    // // Ensure both players are marked as joined
+    // setBothPlayersJoined(true);
   };
 
   // Handler to restart the game
   const restartGame = () => {
-    socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
-    reset();
-    navigate("/game"); // Go back to the main game page with fresh start
+    // socket.emit("restartGame", { room: gameState.roomName }); // Specify the room to restart
+    socket.emit("restartGame");
+    // reset();
+    // navigate("/game"); // Go back to the main game page with fresh start
   };
 
   return (
-    <div className="container vh-100 d-flex align-items-center justify-content-center">
+    <div className="vh-100 d-flex align-items-center justify-content-center">
       <CustomToastContainer />
       <RandomBackgroundComponent />
       {!isGameStarted ? (

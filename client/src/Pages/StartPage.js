@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Col, Row } from "react-bootstrap";
 import HomepageLayout from "../components/Layout/HomepageLayout";
 import CustomToastContainer from "../components/Toast/CustomToastContainer";
+import { socket } from "../socket.js";
 
 const StartPage = () => {
   const [nickname, setNickname] = useState("");
@@ -12,6 +13,10 @@ const StartPage = () => {
   const handleNicknameChange = (e) => {
     setNickname(e.target.value);
   };
+
+  useEffect(() => {
+    socket.emit("registerClient", { type: "game" });
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
