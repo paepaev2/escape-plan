@@ -56,7 +56,7 @@ function GameLogic() {
       setShowGameStartMessage(true);
       setTimeout(() => {
         setShowGameStartMessage(false);
-      }, 3000); // Show the "Game Start" message for 3 seconds
+      }, 1200); // Show the "Game Start" message for 3 seconds
     });
 
     // Clean up event listeners on unmount
