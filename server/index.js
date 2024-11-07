@@ -20,12 +20,50 @@ const clientRooms = {};
 let scoreUpdated = false;
 let connectedClients = 0;
 
-// Socket.IO connection handling
 
+// Serve the admin panel page
+const path = require("path");
+app.use(express.static(path.join(__dirname, 'public', 'admin.html')));
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+// let adminClientId = null;
+
+
+let clients = {};
+function updateAdminClientCount() {
+  io.emit('clientCount', {
+      count: connectedClients,
+      clients: Object.keys(clients)
+  });
+}
+
+// Socket.IO connection handling
 io.on("connection", (client) => {
-  console.log("A user connected:", client.id);
-  connectedClients++;
-  console.log("Connected clients:", connectedClients);
+  // // Assign the first connected client as admin
+  // if (!adminClientId) {
+  //   adminClientId = client.id;
+  //   client.emit("isAdmin", true); // Notify the client they are admin
+  // } else {
+  //   client.emit("isAdmin", false); // Notify others they are not admin
+  // }
+
+  if (client.handshake.headers.origin === "http://localhost:3000") {
+    // console.log("A user connected:", client.id);
+    connectedClients++;
+    clients[client.id] = client; // Store the client's socket ID
+    console.log('Client connected: ', client.id);
+    console.log("Connected clients:", connectedClients);
+
+    // Emit updated client count and online clients to the admin
+    updateAdminClientCount();
+
+    // Send the list of online clients to the new client
+    client.emit('onlineClients', Object.keys(clients));
+
+    // // Emit current connected client count to the admin
+    // io.to(adminClientId).emit("clientCount", connectedClients);
+  }
 
   client.on("newGame", handleNewGame);
   client.on("joinGame", handleJoinGame);
@@ -35,9 +73,36 @@ io.on("connection", (client) => {
   client.on("continueGame", handleContinueGame);
   client.on("nickname", handleNickname);
   client.on("disconnect", () => {
-    console.log("Client disconnected:", client.id);
-    connectedClients--;
-    console.log("Connected clients:", connectedClients);
+    if (client.handshake.headers.origin === "http://localhost:3000") {
+      // console.log("Client disconnected:", client.id);
+      connectedClients--;
+      delete clients[client.id]; // Remove the client from the list
+      console.log('Client disconnected: ', client.id);
+      console.log("Connected clients:", connectedClients);
+      // io.to(adminClientId).emit("clientCount", connectedClients);
+
+      // Update the client count and list of online clients
+      updateAdminClientCount();
+
+      // // Reset admin if the current admin disconnects
+      // if (client.id === adminClientId) {
+      //   adminClientId = null;
+      // }
+    }
+  });
+  client.on("adminResetGame", () => {
+    console.log('Resetting game and scores');
+    io.emit('gameReset'); // Broadcast a reset event to all clients
+
+    // console.log('reset button works, admin is ', adminClientId);
+    // console.log('client is ', client.id);
+    // if (client.id === adminClientId) { // Ensure only admin can reset
+    //   Object.keys(state).forEach(roomName => {
+    //     state[roomName] = initGame(); // Reset game state
+    //   });
+    //   io.emit("resetGame"); // Notify all clients
+    //   console.log("Game reset by admin.");
+    // }
   });
 
   function handleNickname(name, number) {

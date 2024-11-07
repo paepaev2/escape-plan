@@ -30,6 +30,27 @@ function GameLogic() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
 
+  const socket = io("http://localhost:8000"); // Connect to the server
+
+  // Receive the list of online clients from the server
+  socket.on('onlineClients', (clients) => {
+    console.log('Online clients:', clients);
+    // Handle the list of online clients (e.g., display them on the UI)
+  });
+
+  // Listen for client count updates from the server (admin)
+  socket.on('clientCount', (data) => {
+    console.log(`Total connected clients: ${data.count}`);
+    console.log('Online clients:', data.clients);
+    // Update the UI or other client-side logic with client count
+  });
+
+  // Listen for game reset events
+  socket.on('gameReset', () => {
+    console.log('Game and scores have been reset.');
+    // Handle the game reset (reset the UI, scores, etc.)
+  });
+
   useEffect(() => {
     socket.on("gameState", handleGameState);
     socket.on("gameOver", handleGameOver);
