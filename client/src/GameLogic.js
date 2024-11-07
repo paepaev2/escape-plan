@@ -371,7 +371,7 @@ function GameLogic() {
 
   const continueGame = () => {
     console.log("Continue game");
-    socket.emit("continueGame", gameState); // Emit the current game state to continue
+    socket.emit("continueGame", gameState, winner.number); // Emit the current game state to continue
     setIsGameOver(false);
     setWinner(null);
     setKeyPressDone(false);
