@@ -152,6 +152,14 @@ function GameLogic() {
     const map = generateMap(state);
     setGameState({ ...state, map });
     setCurrentTurn(state.turn);
+    //edit
+    setIsGameOver(false);
+    setWinner(null);
+    setKeyPressDone(false);
+    // -edit
+    
+    // Ensure both players are marked as joined
+    setBothPlayersJoined(true);
 
     if (state.timeRemaining) {
       setTurnTimeOut(Date.now() + state.timeRemaining);
@@ -416,11 +424,11 @@ function GameLogic() {
   const continueGame = () => {
     console.log("Continue game");
     socket.emit("continueGame", gameState, winner.number); // Emit the current game state to continue
-    setIsGameOver(false);
-    setWinner(null);
-    setKeyPressDone(false);
-    // Ensure both players are marked as joined
-    setBothPlayersJoined(true);
+    // setIsGameOver(false);
+    // setWinner(null);
+    // setKeyPressDone(false);
+    // // Ensure both players are marked as joined
+    // setBothPlayersJoined(true);
   };
 
   // Handler to restart the game
