@@ -12,6 +12,14 @@ import { toast } from "react-toastify";
 import CustomToastContainer from "../components/Toast/CustomToastContainer";
 import { socket } from "../socket";
 import GameOverPage from "./GameOverPage";
+import Loading from "../assets/game/loading.gif";
+
+const imageStyle = {
+  marginTop: "20px",
+  width: "auto",
+  height: "20%",
+  maxHeight: "200px",
+};
 
 function GameLogic() {
   const navigate = useNavigate();
@@ -39,6 +47,23 @@ function GameLogic() {
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
+  const [showGameStartMessage, setShowGameStartMessage] = useState(false);
+
+  useEffect(() => {
+    socket.on("bothPlayersJoined", () => {
+      console.log("Both players have joined the game");
+      setBothPlayersJoined(true);
+      setShowGameStartMessage(true);
+      setTimeout(() => {
+        setShowGameStartMessage(false);
+      }, 3000); // Show the "Game Start" message for 3 seconds
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      socket.off("bothPlayersJoined");
+    };
+  }, []);
 
   useEffect(() => {
     // Event listeners
@@ -74,9 +99,6 @@ function GameLogic() {
     socket.on("unknownGame", handleUnknownGame);
     socket.on("tooManyPlayers", handleTooManyPlayers);
     socket.on("invalidMove", handleInvalidMove);
-    socket.on("bothPlayersJoined", () => {
-      setBothPlayersJoined(true);
-    });
 
     return () => {
       socket.off("gameState", handleGameState);
@@ -85,7 +107,6 @@ function GameLogic() {
       socket.off("unknownGame", handleUnknownGame);
       socket.off("tooManyPlayers", handleTooManyPlayers);
       socket.off("invalidMove", handleInvalidMove);
-      socket.off("bothPlayersJoined");
     };
   }, []);
 
@@ -119,7 +140,7 @@ function GameLogic() {
     socket.on("init", (playerNum) => {
       setPlayerNumber(playerNum);
       setIsGameStarted(true);
-      setBothPlayersJoined(true);
+      // setBothPlayersJoined(true);
       setKeyPressDone(false);
     });
     socket.emit("nickname", nickname, 2);
@@ -170,7 +191,7 @@ function GameLogic() {
     // -edit
 
     // Ensure both players are marked as joined
-    setBothPlayersJoined(true);
+    // setBothPlayersJoined(true);
 
     if (state.warderImagePath) {
       setWarderImagePath(state.warderImagePath);
@@ -512,7 +533,20 @@ function GameLogic() {
         </div>
       ) : (
         <>
-          {isGameOver ? (
+          {!bothPlayersJoined ? (
+            // Display the waiting screen
+            <div className="text-center">
+              <GameNavbar
+                gameCode={gameCode}
+                turnTimeOut={turnTimeOut}
+                handleTurnTimeout={handleTurnTimeout} // Pass the handler to GameNavbar
+              />
+              <h2 style={{ color: "#ffffff" }}>
+                Looking for other players to start...
+              </h2>
+              <img src={Loading} alt="Waiting" style={imageStyle} />
+            </div>
+          ) : isGameOver ? (
             <GameOverPage
               number={winner.number}
               role={winner.role}
@@ -559,6 +593,24 @@ function GameLogic() {
                   />
                 </Col>
               </Row>
+            </div>
+          )}
+          {showGameStartMessage && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000,
+              }}
+            >
+              <h1 style={{ color: "#fff", fontSize: "4rem" }}>Game Start</h1>
             </div>
           )}
         </>

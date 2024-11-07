@@ -13,7 +13,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io(process.env.SERVER_URL);
+        const socket = io("http://172.20.10.5:8000");
         socket.emit('registerClient', { type: 'admin' });
 
         // Update the client count and list when the server sends updates

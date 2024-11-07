@@ -185,11 +185,12 @@ io.on("connection", (client) => {
       client.join(roomName);
       client.number = 2;
       client.emit("init", 2); // Player 2
-      client.to(roomName).emit("bothPlayersJoined");
+
+      // Emit 'bothPlayersJoined' to both clients
+      io.sockets.in(roomName).emit("bothPlayersJoined");
       startGameInterval(roomName);
     }
   }
-
   function handleKeydown(keyCode) {
     const roomName = clientRooms[client.id];
     if (!roomName) return;
