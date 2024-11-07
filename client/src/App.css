@@ -37,6 +37,18 @@
   }
 } */
 
+.responsive-padding {
+  padding: 20px; /* Default padding for small screens */
+
+  @media (min-width: 768px) {
+      padding: 40px; /* Medium screens */
+  }
+
+  @media (min-width: 1200px) {
+      padding: 60px; /* Large screens */
+  }
+}
+
 @font-face {
   font-family: "Minecraft";
   src: url("./assets/fonts/Minecraft.ttf") format("truetype");

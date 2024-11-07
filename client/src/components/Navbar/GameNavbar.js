@@ -11,7 +11,7 @@ function GameNavbar({ gameCode, turnTimeOut }) {
   const renderer = ({ seconds }) => <span>{seconds}s</span>;
 
   return (
-    <Navbar style={navbarStyle}>
+    <Navbar style={navbarStyle} fixed="top">
       <Container className="justify-content-between">
         {/* Timer */}
         <CustomButton>
@@ -44,12 +44,11 @@ function GameNavbar({ gameCode, turnTimeOut }) {
 // Custom styles
 const navbarStyle = {
   color: "#ffffff",
-  padding: "24px 0",
-  position: "fixed",
+  padding: "24px",
   top: 0,
   left: 0,
   width: "100%",
-  zIndex: 2,
+  zIndex: "2"
 };
 
 const gameCodeStyle = {

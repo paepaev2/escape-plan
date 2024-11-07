@@ -9,7 +9,7 @@ import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
 import { toast } from "react-toastify";
-import CustomToastContainer from "./components/CustomToastContainer";
+import CustomToastContainer from "./components/Toast/CustomToastContainer";
 
 const socket = io("http://localhost:8000");
 
@@ -351,10 +351,11 @@ function GameLogic() {
           display: "grid",
           gridTemplateColumns: `repeat(${map[0].length}, 1fr)`,
           gap: "1px",
-          width: "100%",
           height: "100%",
           margin: "0 auto",
+          width: "100%",
           border: "4px dashed #ffffff",
+          aspectRatio: "1",
         }}
       >
         {map.map((row, rowIndex) =>
@@ -408,11 +409,13 @@ function GameLogic() {
               alt="Escape Plan Logo"
             />
           </Row>
+
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
+
           <div>
-            <text style={{ color: "#ffffff" }}>OR</text>
+            <span style={{ color: "#ffffff" }}>OR</span>
           </div>
 
           <input
@@ -421,6 +424,7 @@ function GameLogic() {
             onChange={(e) => setGameCode(e.target.value)}
             className="form-control mt-2"
           />
+
           <button
             onClick={() => joinGame(gameCode)}
             className="btn btn-success mt-2"
@@ -430,14 +434,22 @@ function GameLogic() {
         </div>
       ) : (
         <div className="text-center">
+          {/* Navbar */}
           <GameNavbar gameCode={gameCode} turnTimeOut={turnTimeOut} />
-          <Row>
-            <Col>
-              {gameState && gameState.map && (
-                <Grid map={gameState.map} getCellContent={getCellContent} />
-              )}
+
+          {/* Main Row Content */}
+          <Row className="p-4">
+            <Col xs={12} md={6} className="p-3">
+              <div className="responsive-padding">
+                {gameState && gameState.map && (
+                  <Grid map={gameState.map} getCellContent={getCellContent} />
+                )}
+              </div>
             </Col>
             <Col
+              className="p-3"
+              xs={12}
+              md={6}
               style={{
                 display: "flex",
                 justifyContent: "center",
