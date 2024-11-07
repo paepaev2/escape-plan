@@ -27,7 +27,6 @@ app.use(express.static(path.join(__dirname, 'public', 'admin.html')));
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-// let adminClientId = null;
 
 
 let clients = {};
@@ -40,14 +39,6 @@ function updateAdminClientCount() {
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
-  // // Assign the first connected client as admin
-  // if (!adminClientId) {
-  //   adminClientId = client.id;
-  //   client.emit("isAdmin", true); // Notify the client they are admin
-  // } else {
-  //   client.emit("isAdmin", false); // Notify others they are not admin
-  // }
-
   if (client.handshake.headers.origin === "http://localhost:3000") {
     // console.log("A user connected:", client.id);
     connectedClients++;
@@ -60,9 +51,6 @@ io.on("connection", (client) => {
 
     // Send the list of online clients to the new client
     client.emit('onlineClients', Object.keys(clients));
-
-    // // Emit current connected client count to the admin
-    // io.to(adminClientId).emit("clientCount", connectedClients);
   }
 
   client.on("newGame", handleNewGame);
@@ -79,30 +67,15 @@ io.on("connection", (client) => {
       delete clients[client.id]; // Remove the client from the list
       console.log('Client disconnected: ', client.id);
       console.log("Connected clients:", connectedClients);
-      // io.to(adminClientId).emit("clientCount", connectedClients);
 
       // Update the client count and list of online clients
       updateAdminClientCount();
 
-      // // Reset admin if the current admin disconnects
-      // if (client.id === adminClientId) {
-      //   adminClientId = null;
-      // }
     }
   });
   client.on("adminResetGame", () => {
-    console.log('Resetting game and scores');
+    // console.log('Resetting game and scores');
     io.emit('gameReset'); // Broadcast a reset event to all clients
-
-    // console.log('reset button works, admin is ', adminClientId);
-    // console.log('client is ', client.id);
-    // if (client.id === adminClientId) { // Ensure only admin can reset
-    //   Object.keys(state).forEach(roomName => {
-    //     state[roomName] = initGame(); // Reset game state
-    //   });
-    //   io.emit("resetGame"); // Notify all clients
-    //   console.log("Game reset by admin.");
-    // }
   });
 
   function handleNickname(name, number) {

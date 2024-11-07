@@ -47,8 +47,8 @@ function GameLogic() {
 
   // Listen for game reset events
   socket.on('gameReset', () => {
-    console.log('Game and scores have been reset.');
-    // Handle the game reset (reset the UI, scores, etc.)
+    // console.log('Game and scores have been reset.');
+    reset();
   });
 
   useEffect(() => {
