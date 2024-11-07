@@ -212,42 +212,52 @@ function GameLogic() {
           case 38: // Up arrow
             if (
               player.y > 0 &&
-              newGameState.map[player.y - 1][player.x] !== 1 // Check if the target cell is not an obstacle
+              newGameState.map[player.y - 1][player.x] !== 1 && // Check if the target cell is not an obstacle
+              (player.role !== 'warder' ? true : newGameState.map[player.y - 1][player.x] !== 'h')
             ) {
               player.y -= 1; // Update player's y position
               validMove = true;
+              console.log('up, true, role: ', player.role);
             }
             break;
           case 40: // Down arrow
             if (
               player.y < newGameState.map.length - 1 &&
-              newGameState.map[player.y + 1][player.x] !== 1
+              newGameState.map[player.y + 1][player.x] !== 1 &&
+              (player.role !== 'warder' ? true : newGameState.map[player.y + 1][player.x] !== 'h')
             ) {
               player.y += 1; // Update player's y position
               validMove = true;
+              console.log('down, true, role: ', player.role);
             }
             break;
           case 37: // Left arrow
             if (
               player.x > 0 &&
-              newGameState.map[player.y][player.x - 1] !== 1
+              newGameState.map[player.y][player.x - 1] !== 1 &&
+              (player.role !== 'warder' ? true : newGameState.map[player.y][player.x - 1] !== 'h')
             ) {
               player.x -= 1; // Update player's x position
               validMove = true;
+              console.log('left, true, role: ', player.role);
             }
             break;
           case 39: // Right arrow
             if (
               player.x < newGameState.map[0].length - 1 &&
-              newGameState.map[player.y][player.x + 1] !== 1
+              newGameState.map[player.y][player.x + 1] !== 1 &&
+              (player.role !== 'warder' ? true : newGameState.map[player.y][player.x + 1] !== 'h')
             ) {
               player.x += 1; // Update player's x position
               validMove = true;
+              console.log('right, true, role: ', player.role);
             }
             break;
           default:
             break;
         }
+
+        console.log('final validMove= ', validMove);
 
         if (validMove) {
           // Regenerate the map with the updated player positions

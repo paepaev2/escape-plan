@@ -85,7 +85,7 @@ function validMove(state, index, move) {
   }
 
   // Warden cannot move into the tunnel
-  if (player.role === "warden" && tunnel.x === x && tunnel.y === y) {
+  if (player.role === "warder" && tunnel.x === x && tunnel.y === y) {
     return false;
   }
 
