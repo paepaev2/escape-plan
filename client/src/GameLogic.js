@@ -7,6 +7,9 @@ import EscapePlanLogo from "./assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
+import LoadingPage from "./LoadingPage";
+import { toast } from "react-toastify";
+import CustomToastContainer from "./components/Toast/CustomToastContainer";
 import { socket } from "./socket";
 import GameOverPage from "./GameOverPage";
 
@@ -150,8 +153,7 @@ function GameLogic() {
     }
 
     socket.emit("setScore", number);
-    alert(`Game Over! Player ${number}, ${role} won! ${win_type}`);
-
+    toast.error(`Game Over! Player ${number}, ${role} won!`);
     setWinner({ number, role });
     setIsGameOver(true);
   };
@@ -161,17 +163,17 @@ function GameLogic() {
   };
 
   const handleUnknownGame = () => {
-    alert("Unknown Game Code.");
+    toast.error("Unknown Game Code.");
     reset();
   };
 
   const handleTooManyPlayers = () => {
-    alert("This game already has two players.");
+    toast.error("This game already has two players.");
     reset();
   };
 
   const handleInvalidMove = () => {
-    alert("You cannot move to that way !-!");
+    toast.error("You cannot move to that way !-!");
   };
 
   const reset = () => {
@@ -262,7 +264,7 @@ function GameLogic() {
         }
       }
     } else if (arrowKeys.includes(event.keyCode)) {
-      alert("It's not your turn!, please wait for another player");
+      toast.error("It's not your turn!, please wait for another player");
     }
   };
 
@@ -341,10 +343,11 @@ function GameLogic() {
           display: "grid",
           gridTemplateColumns: `repeat(${map[0].length}, 1fr)`,
           gap: "1px",
-          width: "100%",
           height: "100%",
           margin: "0 auto",
+          width: "100%",
           border: "4px dashed #ffffff",
+          aspectRatio: "1",
         }}
       >
         {map.map((row, rowIndex) =>
@@ -388,6 +391,7 @@ function GameLogic() {
 
   return (
     <div className="container vh-100 d-flex align-items-center justify-content-center">
+      <CustomToastContainer />
       <RandomBackgroundComponent />
       {!isGameStarted ? (
         <div className="text-center">
@@ -409,13 +413,16 @@ function GameLogic() {
           <button onClick={createGame} className="btn btn-success m-2">
             Create New Game
           </button>
-          <div>OR</div>
+          <div>
+            <span style={{ color: "#ffffff" }}>OR</span>
+          </div>
           <input
             type="text"
             placeholder="Enter Game Code"
             onChange={(e) => setGameCode(e.target.value)}
             className="form-control mt-2"
           />
+
           <button
             onClick={() => joinGame(gameCode)}
             className="btn btn-success mt-2"

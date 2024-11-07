@@ -1,0 +1,12 @@
+.custom-toast {
+  font-family: "Minecraft", sans-serif;
+  font-size: 16px;
+  color: #fff;
+  background-color: #333;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.custom-toast-body {
+  font-family: "Minecraft", sans-serif;
+}
