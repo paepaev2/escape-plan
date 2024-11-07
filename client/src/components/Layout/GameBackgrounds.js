@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import background1 from "../assets/backgrounds/bg1.png";
-import background2 from "../assets/backgrounds/bg2.gif";
-import background3 from "../assets/backgrounds/bg3.png";
+import background1 from "../../assets/backgrounds/bg1.png";
+import background2 from "../../assets/backgrounds/bg2.gif";
+import background3 from "../../assets/backgrounds/bg3.png";
 
 function RandomBackgroundComponent() {
   const backgrounds = [background1, background2, background3];

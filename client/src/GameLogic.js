@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Countdown from "react-countdown";
 import { io } from "socket.io-client";
 import GameNavbar from "./components/Navbar/GameNavbar";
-import RandomBackgroundComponent from "./components/GameBackgrounds";
+import RandomBackgroundComponent from "./components/Layout/GameBackgrounds";
 import EscapePlanLogo from "./assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
 import PlayerInfo from "./components/PlayerInfo";

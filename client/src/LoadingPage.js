@@ -1,29 +1,22 @@
 import React from "react";
-import Loading from "./assets/game/loading.gif"; 
+import Loading from "./assets/game/loading.gif";
+import LobbyLayout from "./components/Layout/LobbyLayout";
 
 function WaitingScreen() {
-  const containerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    backgroundColor: "black",
-    color: "white",
-    textAlign: "center",
-  };
 
   const imageStyle = {
     marginTop: "20px",
-    width: "auto", 
-    height: "60%",
+    width: "auto",
+    height: "20%",
   };
 
   return (
-    <div style={containerStyle}>
-      <h1 style={{ color: "#ffffff"}}>Looking for other players to start...</h1>
+    <LobbyLayout>
+      <h2 style={{ color: "#ffffff" }}>
+        Looking for other players to start...
+      </h2>
       <img src={Loading} alt="Waiting" style={imageStyle} />
-    </div>
+    </LobbyLayout>
   );
 }
 
