@@ -15,13 +15,13 @@ function WaitingScreen() {
 
   const imageStyle = {
     marginTop: "20px",
-    width: "100%", 
-    height: "auto",
+    width: "auto", 
+    height: "60%",
   };
 
   return (
     <div style={containerStyle}>
-      <h1>Waiting for other players to start...</h1>
+      <h1 style={{ color: "#ffffff"}}>Looking for other players to start...</h1>
       <img src={Loading} alt="Waiting" style={imageStyle} />
     </div>
   );
