@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <p>Connected Clients: <span id="clientCount">0</span></p>
+    <p>Online Clients: <ul id="clientList"></ul></p>
+    <button id="resetButton">Reset Game</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io("http://localhost:8000");
+
+        // Update the client count and list when the server sends updates
+        socket.on('clientCount', (data) => {
+            document.getElementById('clientCount').textContent = data.count;
+            const clientList = document.getElementById('clientList');
+            clientList.innerHTML = '';
+            data.clients.forEach(client => {
+                const listItem = document.createElement('li');
+                listItem.textContent = client;
+                clientList.appendChild(listItem);
+            });
+        });
+
+        // Send reset game request to the server when the reset button is clicked
+        document.getElementById('resetButton').addEventListener('click', () => {
+            socket.emit('adminResetGame');
+        });
+    </script>
+</body>
+</html>
