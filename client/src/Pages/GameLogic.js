@@ -94,6 +94,7 @@ function GameLogic() {
   }, [gameState, playerNumber]);
 
   const createGame = () => {
+    console.log("Create game", socket);
     socket.emit("newGame");
     socket.on("gameCode", (code) => {
       setGameCode(code);

@@ -5,26 +5,57 @@ const cors = require("cors");
 const path = require("path");
 const { gameLoop, validMove, getUpdatedPos, initGame } = require("./game");
 const { makeid } = require("./utils");
+require("dotenv").config();
 
 // Set up the Express app and server
 const app = express();
 const server = http.createServer(app);
+// const server = app.listen(8000, '0.0.0.0', () => {
+//   console.log('Server is running on port 8000');
+// });
+
+// Use environment variables for IP and PORT
+const PORT = process.env.SERVER_PORT || 8000;
+const IP = process.env.SERVER_IP || "0.0.0.0";
+
+// const server = app.listen(PORT, IP, () => {
+//   console.log(`Server is running on ${IP}:${PORT}`);
+// });
+
+app.get("/config", (req, res) => {
+  res.json({
+    serverIp: process.env.SERVER_IP || "0.0.0.0",
+    serverPort: process.env.SERVER_PORT,
+  });
+});
+
+// const io = socketIo(server, {
+//   cors: {
+//     // origin: "http://localhost:3000", // React frontend
+//     origin: "http://192.168.56.1:3000",
+//     methods: ["GET", "POST"],
+//   },
+// });
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000", // React frontend
+    origin: process.env.FRONTEND_ORIGIN,
     methods: ["GET", "POST"],
   },
+});
+
+server.listen(PORT, IP, () => {
+  console.log(`Server is running on port ${PORT} ${IP}`);
 });
 
 const state = {};
 const clientRooms = {};
 let scoreUpdated = false;
-
-// Serve the admin panel page
 app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
+
 
 // Client tracking
 let clients = {}; // key: socket id, value: client type ('game' or 'admin')
@@ -47,6 +78,7 @@ function updateAdminClientCount() {
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
+
   client.on("registerClient", (data) => {
     const clientType = data.type;
     clients[client.id] = clientType;
@@ -235,8 +267,3 @@ function startGameInterval(roomName) {
     }
   }, 1000 / 60);
 }
-
-const PORT = 8000;
-server.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
