@@ -24,7 +24,7 @@ function GameLogic() {
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
   const [winner, setWinner] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState([]);
 
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
@@ -73,6 +73,7 @@ function GameLogic() {
       setPlayerNumber(1);
       setIsGameStarted(true);
     });
+    socket.emit("nickname", nickname, 1);
   };
 
   const joinGame = (roomName) => {
@@ -83,6 +84,7 @@ function GameLogic() {
       setBothPlayersJoined(true);
       setKeyPressDone(false);
     });
+    socket.emit("nickname", nickname, 2);
 
     socket.on("unknownGame", handleUnknownGame);
     socket.on("tooManyPlayers", handleTooManyPlayers);
@@ -476,6 +478,7 @@ function GameLogic() {
                   <PlayerInfo
                     playerNumber={playerNumber}
                     playerRole={playerRole}
+                    nickname={nickname}
                   />
                 </Col>
               </Row>

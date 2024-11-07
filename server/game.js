@@ -182,9 +182,9 @@ function randomPos(state) {
   selectedMap.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (cell === "p") {
-        players.push({ x, y, role: "prisoner" });
+        players.push({ x, y, role: "prisoner", nickname: "" });
       } else if (cell === "w") {
-        players.push({ x, y, role: "warder" });
+        players.push({ x, y, role: "warder", nickname: "" });
       } else if (cell === 1) {
         obstacles.push({ x, y });
       } else if (cell === "h") {

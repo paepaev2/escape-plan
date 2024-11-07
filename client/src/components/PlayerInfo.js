@@ -3,7 +3,7 @@ import { Row, Col, Card } from "react-bootstrap";
 import Rules from "../assets/game/rules.png";
 import Star from "../assets/game/star.png";
 
-function PlayerInfo({ playerNumber, playerRole }) {
+function PlayerInfo({ playerNumber, playerRole, nickname }) {
   return (
     <Row
       className="justify-content-center"
@@ -12,7 +12,7 @@ function PlayerInfo({ playerNumber, playerRole }) {
       <Col md={10}>
         {/* Player Role Display */}
         <h3>
-          You are Player {playerNumber}, {playerRole}
+          You are {nickname}, {playerRole}
           <img
             src={
               playerRole === "warder"

@@ -33,11 +33,21 @@ io.on("connection", (client) => {
   client.on("timeout", handleTimeout);
   client.on("setScore", handleSetScore);
   client.on("continueGame", handleContinueGame);
+  client.on("nickname", handleNickname);
   client.on("disconnect", () => {
     console.log("Client disconnected:", client.id);
     connectedClients--;
     console.log("Connected clients:", connectedClients);
   });
+
+  function handleNickname(name, number) {
+    const roomName = clientRooms[client.id];
+    // console.log("state nick: ", state[roomName].players, name, number);
+    state[roomName].players[number-1].nickname = name;
+    // console.log('test nickname= ', state[roomName].players[number-1]);
+
+    io.sockets.in(roomName).emit("gameState", state[roomName]);
+  }
 
   function handleTimeout(lostNum) {
     let winner;
