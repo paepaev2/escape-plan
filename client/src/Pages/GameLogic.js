@@ -31,6 +31,32 @@ function GameLogic() {
   const [keyPressDone, setKeyPressDone] = useState(false);
 
   useEffect(() => {
+    // Event listeners
+    socket.on("onlineClients", (clients) => {
+      console.log("Online clients:", clients);
+      // Handle the list of online clients (e.g., display them on the UI)
+    });
+
+    socket.on("clientCount", (data) => {
+      console.log(`Total connected clients: ${data.count}`);
+      console.log("Online clients:", data.clients);
+      // Update the UI or other client-side logic with client count
+    });
+
+    socket.on("gameReset", () => {
+      // Reset the game state
+      reset();
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      socket.off("onlineClients");
+      socket.off("clientCount");
+      socket.off("gameReset");
+    };
+  }, []);
+
+  useEffect(() => {
     socket.on("gameState", handleGameState);
     socket.on("gameOver", handleGameOver);
     socket.on("gameCode", handleGameCode);

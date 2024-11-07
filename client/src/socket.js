@@ -1,3 +1,3 @@
 import { io } from "socket.io-client";
-
-export const socket = io("http://localhost:8000");
+const socket = io("http://localhost:8000");
+export { socket };
