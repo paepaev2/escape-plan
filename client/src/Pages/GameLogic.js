@@ -524,6 +524,7 @@ function GameLogic() {
                     playerNumber={playerNumber}
                     playerRole={playerRole}
                     nickname={nickname}
+                    turn={currentTurn}
                   />
                 </Col>
               </Row>

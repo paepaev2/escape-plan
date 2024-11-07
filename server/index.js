@@ -163,6 +163,7 @@ io.on("connection", (client) => {
 
   function handleNewGame() {
     const roomName = makeid(5);
+    console.log(roomName);
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
 
