@@ -447,13 +447,21 @@ function GameLogic() {
                 turnTimeOut={turnTimeOut}
                 handleTurnTimeout={handleTurnTimeout} // Pass the handler to GameNavbar
               />
-              <Row>
-                <Col>
-                  {gameState && gameState.map && (
-                    <Grid map={gameState.map} getCellContent={getCellContent} />
-                  )}
+              <Row className="p-4">
+                <Col xs={12} md={6} className="p-3">
+                  <div className="responsive-padding">
+                    {gameState && gameState.map && (
+                      <Grid
+                        map={gameState.map}
+                        getCellContent={getCellContent}
+                      />
+                    )}
+                  </div>
                 </Col>
                 <Col
+                  className="p-3"
+                  xs={12}
+                  md={6}
                   style={{
                     display: "flex",
                     justifyContent: "center",
