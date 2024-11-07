@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
+const path = require("path");
 const { gameLoop, validMove, getUpdatedPos, initGame } = require("./game");
 const { makeid } = require("./utils");
 
@@ -18,41 +19,64 @@ const io = socketIo(server, {
 const state = {};
 const clientRooms = {};
 let scoreUpdated = false;
-let connectedClients = 0;
-
 
 // Serve the admin panel page
-const path = require("path");
-app.use(express.static(path.join(__dirname, 'public', 'admin.html')));
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
+// Client tracking
+let clients = {}; // key: socket id, value: client type ('game' or 'admin')
 
-let clients = {};
 function updateAdminClientCount() {
-  io.emit('clientCount', {
-      count: connectedClients,
-      clients: Object.keys(clients)
+  const gameClientIds = Object.keys(clients).filter(
+    (id) => clients[id] === "game"
+  );
+  const adminClients = Object.keys(clients).filter(
+    (id) => clients[id] === "admin"
+  );
+
+  adminClients.forEach((adminId) => {
+    io.to(adminId).emit("clientCount", {
+      count: gameClientIds.length,
+      clients: gameClientIds,
+    });
   });
 }
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
-  if (client.handshake.headers.origin === "http://localhost:3000") {
-    // console.log("A user connected:", client.id);
-    connectedClients++;
-    clients[client.id] = client; // Store the client's socket ID
-    console.log('Client connected: ', client.id);
-    console.log("Connected clients:", connectedClients);
+  client.on("registerClient", (data) => {
+    const clientType = data.type;
+    clients[client.id] = clientType;
+    console.log("Client registered:", client.id, "Type:", clientType);
 
-    // Emit updated client count and online clients to the admin
-    updateAdminClientCount();
+    if (clientType === "game") {
+      updateAdminClientCount();
+    } else if (clientType === "admin") {
+      // Send the current client count to the new admin client
+      const gameClientIds = Object.keys(clients).filter(
+        (id) => clients[id] === "game"
+      );
+      client.emit("clientCount", {
+        count: gameClientIds.length,
+        clients: gameClientIds,
+      });
+    }
+  });
 
-    // Send the list of online clients to the new client
-    client.emit('onlineClients', Object.keys(clients));
-  }
+  client.on("disconnect", () => {
+    const clientType = clients[client.id];
+    delete clients[client.id]; // Remove the client from the list
+    console.log("Client disconnected:", client.id, "Type:", clientType);
 
+    if (clientType === "game") {
+      updateAdminClientCount();
+    }
+  });
+
+  // Game event handlers
   client.on("newGame", handleNewGame);
   client.on("joinGame", handleJoinGame);
   client.on("keydown", handleKeydown);
@@ -60,38 +84,25 @@ io.on("connection", (client) => {
   client.on("setScore", handleSetScore);
   client.on("continueGame", handleContinueGame);
   client.on("nickname", handleNickname);
-  client.on("disconnect", () => {
-    if (client.handshake.headers.origin === "http://localhost:3000") {
-      // console.log("Client disconnected:", client.id);
-      connectedClients--;
-      delete clients[client.id]; // Remove the client from the list
-      console.log('Client disconnected: ', client.id);
-      console.log("Connected clients:", connectedClients);
 
-      // Update the client count and list of online clients
-      updateAdminClientCount();
-
-    }
-  });
+  // Admin event handler
   client.on("adminResetGame", () => {
-    // console.log('Resetting game and scores');
-    io.emit('gameReset'); // Broadcast a reset event to all clients
+    console.log("Resetting game and scores");
+    io.emit("gameReset"); // Broadcast a reset event to all clients
   });
 
   function handleNickname(name, number) {
     const roomName = clientRooms[client.id];
-    // console.log("state nick: ", state[roomName].players, name, number);
-    state[roomName].players[number-1].nickname = name;
-    // console.log('test nickname= ', state[roomName].players[number-1]);
-
+    if (!state[roomName]) return;
+    state[roomName].players[number - 1].nickname = name;
     io.sockets.in(roomName).emit("gameState", state[roomName]);
   }
 
   function handleTimeout(lostNum) {
-    let winner;
     const roomName = clientRooms[client.id];
     if (!roomName) return;
 
+    let winner;
     if (state[roomName].players[lostNum - 1].role === "prisoner") {
       winner = lostNum === 1 ? 2.2 : 2.1;
     } else {
@@ -101,22 +112,18 @@ io.on("connection", (client) => {
     io.sockets.in(roomName).emit("gameOver", { winner, win_type: "timeout" });
   }
 
-  function handleSetScore(lostNum) {
+  function handleSetScore(winnerNum) {
     if (!scoreUpdated) {
       const roomName = clientRooms[client.id];
-      state[roomName].scores[lostNum - 1] += 1;
-
-      const finalGameState = state[roomName];
-      console.log(finalGameState);
-      io.sockets.in(roomName).emit("gameState", finalGameState);
+      if (!state[roomName]) return;
+      state[roomName].scores[winnerNum - 1] += 1;
+      io.sockets.in(roomName).emit("gameState", state[roomName]);
     }
-
     scoreUpdated = true;
   }
 
   function handleNewGame() {
     const roomName = makeid(5);
-
     clientRooms[client.id] = roomName;
     state[roomName] = initGame();
 
@@ -158,10 +165,8 @@ io.on("connection", (client) => {
         if (validMove(state[roomName], client.number, move)) {
           player.x += move.x;
           player.y += move.y;
-          if (turn === 1) state[roomName].turn = 2;
-          else state[roomName].turn = 1;
+          state[roomName].turn = turn === 1 ? 2 : 1;
           state[roomName].turnStartTime = Date.now();
-
           client.to(roomName).emit("turnCompleted");
         } else {
           io.to(client.id).emit("invalidMove");
