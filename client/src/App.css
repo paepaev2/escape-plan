@@ -49,6 +49,10 @@
   }
 }
 
+.white-text {
+  color: white;
+}
+
 @font-face {
   font-family: "Minecraft";
   src: url("./assets/fonts/Minecraft.ttf") format("truetype");
