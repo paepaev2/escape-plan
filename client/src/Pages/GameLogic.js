@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import Countdown from "react-countdown";
 import { io } from "socket.io-client";
-import GameNavbar from "./components/Navbar/GameNavbar";
-import RandomBackgroundComponent from "./components/GameBackgrounds";
-import EscapePlanLogo from "./assets/fonts/escapeplan.png";
+import GameNavbar from "../components/Navbar/GameNavbar";
+import RandomBackgroundComponent from "../components/Layout/GameBackgrounds";
+import EscapePlanLogo from "../assets/fonts/escapeplan.png";
 import { Col, Row } from "react-bootstrap";
-import PlayerInfo from "./components/PlayerInfo";
+import PlayerInfo from "../components/PlayerInfo";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
 import { toast } from "react-toastify";
-import CustomToastContainer from "./components/Toast/CustomToastContainer";
-import { socket } from "./socket";
+import CustomToastContainer from "../components/Toast/CustomToastContainer";
+import { socket } from "../socket";
 import GameOverPage from "./GameOverPage";
 
 function GameLogic() {
@@ -24,7 +24,7 @@ function GameLogic() {
   const [bothPlayersJoined, setBothPlayersJoined] = useState(false);
   const [winner, setWinner] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState([]);
 
   const [currentTurn, setCurrentTurn] = useState(null);
   const [turnTimeOut, setTurnTimeOut] = useState(null);
@@ -73,6 +73,7 @@ function GameLogic() {
       setPlayerNumber(1);
       setIsGameStarted(true);
     });
+    socket.emit("nickname", nickname, 1);
   };
 
   const joinGame = (roomName) => {
@@ -83,6 +84,7 @@ function GameLogic() {
       setBothPlayersJoined(true);
       setKeyPressDone(false);
     });
+    socket.emit("nickname", nickname, 2);
 
     socket.on("unknownGame", handleUnknownGame);
     socket.on("tooManyPlayers", handleTooManyPlayers);
@@ -214,7 +216,10 @@ function GameLogic() {
           case 38: // Up arrow
             if (
               player.y > 0 &&
-              newGameState.map[player.y - 1][player.x] !== 1 // Check if the target cell is not an obstacle
+              newGameState.map[player.y - 1][player.x] !== 1 && // Check if the target cell is not an obstacle
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y - 1][player.x] !== "h")
             ) {
               player.y -= 1; // Update player's y position
               validMove = true;
@@ -223,7 +228,10 @@ function GameLogic() {
           case 40: // Down arrow
             if (
               player.y < newGameState.map.length - 1 &&
-              newGameState.map[player.y + 1][player.x] !== 1
+              newGameState.map[player.y + 1][player.x] !== 1 &&
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y + 1][player.x] !== "h")
             ) {
               player.y += 1; // Update player's y position
               validMove = true;
@@ -232,7 +240,10 @@ function GameLogic() {
           case 37: // Left arrow
             if (
               player.x > 0 &&
-              newGameState.map[player.y][player.x - 1] !== 1
+              newGameState.map[player.y][player.x - 1] !== 1 &&
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y][player.x - 1] !== "h")
             ) {
               player.x -= 1; // Update player's x position
               validMove = true;
@@ -241,7 +252,10 @@ function GameLogic() {
           case 39: // Right arrow
             if (
               player.x < newGameState.map[0].length - 1 &&
-              newGameState.map[player.y][player.x + 1] !== 1
+              newGameState.map[player.y][player.x + 1] !== 1 &&
+              (player.role !== "warder"
+                ? true
+                : newGameState.map[player.y][player.x + 1] !== "h")
             ) {
               player.x += 1; // Update player's x position
               validMove = true;
@@ -390,7 +404,7 @@ function GameLogic() {
   };
 
   return (
-    <div className="container vh-100 align-items-center justify-content-center">
+    <div className="vh-100 d-flex align-items-center justify-content-center">
       <CustomToastContainer />
       <RandomBackgroundComponent />
       {!isGameStarted ? (
@@ -447,13 +461,21 @@ function GameLogic() {
                 turnTimeOut={turnTimeOut}
                 handleTurnTimeout={handleTurnTimeout} // Pass the handler to GameNavbar
               />
-              <Row>
-                <Col>
-                  {gameState && gameState.map && (
-                    <Grid map={gameState.map} getCellContent={getCellContent} />
-                  )}
+              <Row className="p-4">
+                <Col xs={12} md={6} className="p-3">
+                  <div className="responsive-padding">
+                    {gameState && gameState.map && (
+                      <Grid
+                        map={gameState.map}
+                        getCellContent={getCellContent}
+                      />
+                    )}
+                  </div>
                 </Col>
                 <Col
+                  className="p-3"
+                  xs={12}
+                  md={6}
                   style={{
                     display: "flex",
                     justifyContent: "center",
@@ -464,6 +486,7 @@ function GameLogic() {
                   <PlayerInfo
                     playerNumber={playerNumber}
                     playerRole={playerRole}
+                    nickname={nickname}
                   />
                 </Col>
               </Row>
