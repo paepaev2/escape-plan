@@ -13,6 +13,7 @@ import CustomToastContainer from "../components/Toast/CustomToastContainer";
 import { socket } from "../socket";
 import GameOverPage from "./GameOverPage";
 import Loading from "../assets/game/loading.gif";
+import "./GameLogic.css";
 
 const imageStyle = {
   marginTop: "20px",
@@ -48,6 +49,7 @@ function GameLogic() {
   const [turnTimeOut, setTurnTimeOut] = useState(null);
   const [keyPressDone, setKeyPressDone] = useState(false);
   const [showGameStartMessage, setShowGameStartMessage] = useState(false);
+  const [shakeScreen, setShakeScreen] = useState(false);
 
   useEffect(() => {
     socket.on("bothPlayersJoined", () => {
@@ -257,6 +259,10 @@ function GameLogic() {
   };
 
   const handleInvalidMove = () => {
+    setShakeScreen(true);
+    setTimeout(() => {
+      setShakeScreen(false);
+    }, 500); // Match the duration of the shake animation
     toast.error("You cannot move to that way !-!");
   };
 
@@ -491,7 +497,11 @@ function GameLogic() {
   };
 
   return (
-    <div className="vh-100 d-flex align-items-center justify-content-center">
+    <div
+      className={`vh-100 d-flex align-items-center justify-content-center ${
+        shakeScreen ? "shake" : ""
+      }`}
+    >
       <CustomToastContainer />
       <RandomBackgroundComponent />
       {!isGameStarted ? (
