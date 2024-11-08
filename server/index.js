@@ -51,6 +51,7 @@ const state = {};
 const clientRooms = {};
 let scoreUpdated = false;
 app.use(express.static(path.join(__dirname, "public")));
+let gameTimeoutDuration = 10000;
 
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
@@ -72,11 +73,14 @@ function updateAdminClientCount() {
       count: gameClientIds.length,
       clients: gameClientIds,
     });
+    io.to(adminId).emit("currentTimeout", gameTimeoutDuration / 1000);
   });
 }
 
 // Socket.IO connection handling
 io.on("connection", (client) => {
+  client.on("adminSetTimeout", handleAdminSetTimeout);
+
   client.on("registerClient", (data) => {
     const clientType = data.type;
     clients[client.id] = clientType;
@@ -93,6 +97,7 @@ io.on("connection", (client) => {
         count: gameClientIds.length,
         clients: gameClientIds,
       });
+      client.emit("currentTimeout", gameTimeoutDuration / 1000);
     }
   });
 
@@ -105,6 +110,18 @@ io.on("connection", (client) => {
       updateAdminClientCount();
     }
   });
+
+  function handleAdminSetTimeout(newTimeout) {
+    console.log(`Admin set new timeout duration: ${newTimeout} seconds`);
+    gameTimeoutDuration = newTimeout * 1000; // Convert to milliseconds
+    // Notify all admin clients of the updated timeout
+    const adminClients = Object.keys(clients).filter(
+      (id) => clients[id] === "admin"
+    );
+    adminClients.forEach((adminId) => {
+      io.to(adminId).emit("timeoutUpdated", newTimeout);
+    });
+  }
 
   // Game event handlers
   client.on("newGame", handleNewGame);
@@ -237,7 +254,7 @@ io.on("connection", (client) => {
     state[roomName] = newGameState;
     state[roomName].turn = winner;
     state[roomName].turnStartTime = Date.now();
-    state[roomName].timeRemaining = 10000; // Reset timeRemaining
+    state[roomName].timeRemaining = gameTimeoutDuration;
     io.sockets.in(roomName).emit("gameState", state[roomName]);
     startGameInterval(roomName);
   }
@@ -255,7 +272,7 @@ function startGameInterval(roomName) {
       clearInterval(intervalId);
     } else {
       const timeElapsed = Date.now() - state[roomName].turnStartTime;
-      const timeRemaining = 10000 - timeElapsed;
+      const timeRemaining = gameTimeoutDuration - timeElapsed;
       if (timeRemaining <= 0) {
         // Current player has timed out
         const lostNum = state[roomName].turn; // Current player's number

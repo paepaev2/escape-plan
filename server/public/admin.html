@@ -2,18 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
 </head>
 <body>
     <h1>Admin Panel</h1>
     <p>Connected Clients: <span id="clientCount">0</span></p>
     <p>Online Clients: <ul id="clientList"></ul></p>
+
+    <!-- New Timeout Adjustment Section -->
+    <h2>Adjust Timeout Duration</h2>
+    <label for="timeoutInput">Timeout Duration (seconds): </label>
+    <input type="number" id="timeoutInput" min="1" value="10">
+    <button id="setTimeoutButton">Set Timeout</button>
+    <p>Current Timeout: <span id="currentTimeout">10</span> seconds</p>
+
+    <!-- Reset Game Button -->
     <button id="resetButton">Reset Game</button>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io("http://172.20.10.5:8000");
+        const socket = io();
+
         socket.emit('registerClient', { type: 'admin' });
 
         // Update the client count and list when the server sends updates
@@ -22,15 +31,40 @@
             const clientList = document.getElementById('clientList');
             clientList.innerHTML = '';
             data.clients.forEach(client => {
-            const listItem = document.createElement('li');
-            listItem.textContent = client;
-            clientList.appendChild(listItem);
+                const listItem = document.createElement('li');
+                listItem.textContent = client;
+                clientList.appendChild(listItem);
             });
         });
 
         // Send reset game request to the server when the reset button is clicked
         document.getElementById('resetButton').addEventListener('click', () => {
             socket.emit('adminResetGame');
+        });
+
+        // Handle Timeout Adjustment
+        const timeoutInput = document.getElementById('timeoutInput');
+        const setTimeoutButton = document.getElementById('setTimeoutButton');
+        const currentTimeoutDisplay = document.getElementById('currentTimeout');
+
+        setTimeoutButton.addEventListener('click', () => {
+            const newTimeout = parseInt(timeoutInput.value);
+            if (newTimeout >= 1) {
+                socket.emit('adminSetTimeout', newTimeout);
+            } else {
+                alert('Please enter a timeout value of at least 1 second.');
+            }
+        });
+
+        // Update the current timeout display when the server confirms the change
+        socket.on('timeoutUpdated', (newTimeout) => {
+            currentTimeoutDisplay.textContent = newTimeout;
+        });
+
+        // Initialize the current timeout display on page load
+        socket.on('currentTimeout', (currentTimeout) => {
+            currentTimeoutDisplay.textContent = currentTimeout;
+            timeoutInput.value = currentTimeout;
         });
     </script>
 </body>

@@ -14,6 +14,7 @@ import { socket } from "../socket";
 import GameOverPage from "./GameOverPage";
 import Loading from "../assets/game/loading.gif";
 import "./GameLogic.css";
+import moveSoundEffect from "./move-sound.m4a";
 
 const imageStyle = {
   marginTop: "20px",
@@ -50,6 +51,7 @@ function GameLogic() {
   const [keyPressDone, setKeyPressDone] = useState(false);
   const [showGameStartMessage, setShowGameStartMessage] = useState(false);
   const [shakeScreen, setShakeScreen] = useState(false);
+  const moveSound = useRef(new Audio(moveSoundEffect));
 
   useEffect(() => {
     socket.on("bothPlayersJoined", () => {
@@ -355,11 +357,15 @@ function GameLogic() {
 
         if (validMove) {
           // Regenerate the map with the updated player positions
+          // moveSound.current.currentTime = 0;
+          // moveSound.current.play();
           const map = generateMap(newGameState);
           setGameState({ ...newGameState, map }); // Update the game state
           socket.emit("move", newGameState); // Emit the updated game state to the server
           setKeyPressDone(true);
           setTurnTimeOut(null);
+
+          // moveSound.current.currentTime = 0;
 
           // Switch turns
           setCurrentTurn((prevTurn) => (prevTurn === 1 ? 2 : 1));
