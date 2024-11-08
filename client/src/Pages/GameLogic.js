@@ -228,10 +228,10 @@ function GameLogic() {
       role = "prisoner";
     } else if (winner === 2.1) {
       number = 1;
-      role = "warden";
+      role = "warder";
     } else if (winner === 2.2) {
       number = 2;
-      role = "warden";
+      role = "warder";
     } else {
       role = "error";
     }
